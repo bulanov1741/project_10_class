@@ -149,6 +149,7 @@ class TextbookBox(BoxLayout):
                 self.note_page.current_pos_2 += self.note_page.each_note / int(
                     self.note_page.current_duration.split('/')[0]) * int(
                     self.note_page.current_duration.split('/')[1])
+        self.make_beat()
 
 
 class NotePage(Widget):
@@ -229,11 +230,30 @@ class NotePage(Widget):
                         if index % 2 == 0:
                             Line(points=(
                                 int(self.current_pos_2) - self.k_size_note * 2, y,
-                                int(self.current_pos_1) + self.k_size_note * 2, y))
+                                int(self.current_pos_2) + self.k_size_note * 2, y))
                             self.list_of_notes_bass.append((index, self.current_pos_2, self.current_duration, 0))
                         self.current_pos_2 += self.each_note / int(self.current_duration.split('/')[0]) * int(
                             self.current_duration.split('/')[1])
                         self.current_clef = 2
+                    self.make_beat()
+
+    # Такты
+    def make_beat(self):
+        for i in range(int(max(sum([int(x[2].split('/')[0]) / int(x[2].split('/')[1]) for x in self.list_of_notes_treble]),
+                           sum([int(x[2].split('/')[0]) / int(x[2].split('/')[1]) for x in self.list_of_notes_bass])) / int(
+            self.time_signature.split('/')[0]) * int(self.time_signature.split('/')[1]))):
+            with self.canvas:
+                Color(0, 0, 0, 1)
+                Line(points=(self.width / 4 * (i + 1),
+                             self.height / 10 * 9 - self.current_string * (self.height / 6 + self.height // 100 * 8),
+                             self.width / 4 * (i + 1),
+                             self.height / 10 * 9 - self.current_string * (self.height / 6 + self.height // 100 * 8) - self.height // 100 * 4))
+                Line(points=(self.width / 4 * (i + 1),
+                             self.height / 10 * 9 - self.current_string * (self.height / 6 + self.height // 100 * 8) - (
+                                         self.height / 24 + self.height // 100 * 4),
+                             self.width / 4 * (i + 1),
+                             self.height / 10 * 9 - self.current_string * (self.height / 6 + self.height // 100 * 8) - (
+                                         self.height / 24 + self.height // 100 * 8)))
 
 
 class ImagePaste(Widget):
