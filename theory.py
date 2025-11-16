@@ -43,30 +43,30 @@ class InstrumentsBox(StackLayout):
         self.width = 60
         self.hint_y = 0.1
 
-        self.save_file = Button(text="Сохранить файл", width=50, size_hint=(None, self.hint_y), )
-        self.new_file = Button(text="Новый файл", width=50, size_hint=(None, self.hint_y))
-        self.draw = Button(text="Режим рисования", width=self.width, size_hint=(None, self.hint_y))
+        self.save_file = Button(width=50, size_hint=(None, self.hint_y), background_normal='save_file.png') # text="Сохранить файл",
+        self.new_file = Button(width=50, size_hint=(None, self.hint_y), background_normal='add_file.png') #text="Новый файл",
+        self.draw = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='drawing.png') # text="Режим рисования",
 
-        self.choice_of_tonality = Button(text="Выбор тональности", width=50, size_hint=(None, self.hint_y))
-        self.choice_of_time_signature = Button(text="Выбор размера", width=50, size_hint=(None, self.hint_y))
+        self.choice_of_tonality = Button(width=50, size_hint=(None, self.hint_y)) #text="Выбор тональности",
+        self.choice_of_time_signature = Button(width=50, size_hint=(None, self.hint_y)) #text="Выбор размера",
 
-        self.flat = Button(text="Бемоль", width=self.width, size_hint=(None, self.hint_y))
-        self.sharp = Button(text="Диез", width=self.width, size_hint=(None, self.hint_y))
-        self.natural = Button(text="Бекар", width=self.width, size_hint=(None, self.hint_y))
+        self.flat = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='flat.png') # text="Бемоль",
+        self.sharp = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='sharp.png') # text="Диез",
+        self.natural = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='natural.png') #text="Бекар",
 
-        self.whole = Button(text="Целая", width=self.width, size_hint=(None, self.hint_y), background_normal='whole.png')
-        self.half = Button(text="Половинка", width=self.width, size_hint=(None, self.hint_y), background_normal='half.png')
-        self.quarter = Button(text="Четверь", width=self.width, size_hint=(None, self.hint_y), background_normal='quarter.png')
-        self.eighth = Button(text="Восьмая", width=self.width, size_hint=(None, self.hint_y), background_normal='eighth.png')
-        self.sixteenth = Button(text="Шестнадцая", width=self.width, size_hint=(None, self.hint_y), background_normal='sixteenth.png')
-        self.thirty_second = Button(text="Тридцать вторая", width=self.width, size_hint=(None, self.hint_y), background_normal='thirty_second.png')
+        self.whole = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='whole.png') # text="Целая",
+        self.half = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='half.png') # text="Половинка",
+        self.quarter = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='quarter.png') # text="Четверь",
+        self.eighth = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='eighth.png') #text="Восьмая",
+        self.sixteenth = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='sixteenth.png') # text="Шестнадцая",
+        self.thirty_second = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='thirty_second.png') # text="Тридцать вторая",
 
-        self.whole_pause = Button(text="Целая пауза", width=self.width, size_hint=(None, self.hint_y), background_normal='whole.png')
-        self.half_pause = Button(text="Половинка пауза", width=self.width, size_hint=(None, self.hint_y), background_normal='half.png')
-        self.quarter_pause = Button(text="Четверь пауза", width=self.width, size_hint=(None, self.hint_y), background_normal='quarter_pause.png')
-        self.eighth_pause = Button(text="Восьмая пауза", width=self.width, size_hint=(None, self.hint_y),background_normal='eighth_pause.png')
-        self.sixteenth_pause = Button(text="Шестнадцая пауза", width=self.width, size_hint=(None, self.hint_y), background_normal='sixteenth_pause.png')
-        self.thirty_second_pause = Button(text="Тридцать вторая пауза", width=self.width, size_hint=(None, self.hint_y), background_normal='thirty_second_pause.png')
+        self.whole_pause = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='whole.png') # text="Целая пауза",
+        self.half_pause = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='half.png') # text="Половинка пауза",
+        self.quarter_pause = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='quarter_pause.png') # text="Четверь пауза",
+        self.eighth_pause = Button(width=self.width, size_hint=(None, self.hint_y),background_normal='eighth_pause.png') # text="Восьмая пауза",
+        self.sixteenth_pause = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='sixteenth_pause.png') # text="Шестнадцая пауза",
+        self.thirty_second_pause = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='thirty_second_pause.png') # text="Тридцать вторая пауза",
 
         self.dot = Button(text="Точка", width=self.width, size_hint=(None, self.hint_y))
         self.tie = Button(text="Лига", width=self.width, size_hint=(None, self.hint_y))

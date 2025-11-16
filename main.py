@@ -1,3 +1,4 @@
+from kivy import Config
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
@@ -14,6 +15,7 @@ class MainBox(BoxLayout):
     def __init__(self):
         super().__init__()
         self.orientation = 'vertical'
+        Config.set('input', 'mouse', 'mouse, disable_multitouch')
         # Экраны
         self.screen_manager = ScreenManager()
         self.theory_screen = TheoryScreen()

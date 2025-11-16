@@ -1,3 +1,5 @@
+from functools import partial
+
 from kivy.uix.image import Image
 from kivy.graphics import Color, Line, Rectangle, Ellipse
 from kivy.uix.boxlayout import BoxLayout
@@ -26,13 +28,15 @@ class TextbookScreen(Screen):
 class TextbookBox(BoxLayout):
     def __init__(self):
         super().__init__()
-        self.note_page = NotePage(size_hint=(None, None), size=(self.width, self.width * 2 ** 0.5))
+        self.orientation = 'vertical'
+
         self.instruments = InstrumentsBox()
         self.add_widget(self.instruments)
+
+        self.note_page = NotePage(size_hint=(None, None), size=(self.width, self.width * 2 ** 0.5))
         self.scroll_page = ScrollView()
+        self.scroll_page.size_hint_y = 0.8
         self.scroll_page.add_widget(self.note_page)
-        self.scroll_page.size_hint_x = 100
-        self.scroll_page.size_hint_y = 5
         self.add_widget(self.scroll_page)
         self.keyboard = ImagePaste('img.png', self.width, self.height, (self.width, self.height / 5), (0, 0))
         self.add_widget(self.keyboard)
@@ -41,13 +45,51 @@ class TextbookBox(BoxLayout):
 
     def update_size(self, instance, value):
         self.clear_widgets()
-        self.note_page = NotePage(size_hint=(None, None), size=(self.width, self.width * 2 ** 0.5))
+
+        # ИНСТРУМЕНТЫ
+        self.instruments = InstrumentsBox()
+        self.instruments.size_hint_y = 0.6
+        self.add_widget(self.instruments)
+        # Обработчики нажатий
+        # self.instruments.save_file.bind(on_press=self.changing_screens_on_theory)
+        # self.instruments.draw.bind(on_press=self.changing_screens_on_theory)
+        # self.instruments.choice_of_tonality.bind(on_press=self.changing_screens_on_theory)
+        # self.instruments.choice_of_time_signature.bind(on_press=self.changing_screens_on_theory)
+        #
+        # self.instruments.flat.bind(on_press=self.changing_screens_on_theory)
+        # self.instruments.sharp.bind(on_press=self.changing_screens_on_theory)
+        # self.instruments.natural.bind(on_press=self.changing_screens_on_theory)
+
+        self.instruments.whole.bind(on_press=partial(self.changing_duration, duration='1/1'))
+        self.instruments.half.bind(on_press=partial(self.changing_duration, duration='1/2'))
+        self.instruments.quarter.bind(on_press=partial(self.changing_duration, duration='1/4'))
+        self.instruments.eighth.bind(on_press=partial(self.changing_duration, duration='1/8'))
+        self.instruments.sixteenth.bind(on_press=partial(self.changing_duration, duration='1/16'))
+        self.instruments.thirty_second.bind(on_press=partial(self.changing_duration, duration='1/32'))
+
+        self.instruments.whole_pause.bind(on_press=partial(self.changing_pause, duration='1/1', image='whole.png'))
+        self.instruments.half_pause.bind(on_press=partial(self.changing_pause, duration='1/2', image='half.png'))
+        self.instruments.quarter_pause.bind(on_press=partial(self.changing_pause, duration='1/4', image='quarter_pause.png'))
+        self.instruments.eighth_pause.bind(on_press=partial(self.changing_pause, duration='1/8', image='eighth_pause.png'))
+        self.instruments.sixteenth_pause.bind(on_press=partial(self.changing_pause, duration='1/16', image='sixteenth_pause.png'))
+        self.instruments.thirty_second_pause.bind(on_press=partial(self.changing_pause, duration='1/32', image='thirty_second_pause.png'))
+        # self.instruments.dot.bind(on_press=partial(self.changing_pause, duration='1/1', image='whole.png'))
+        # self.instruments.tie.bind(on_press=partial(self.changing_pause, duration='1/1', image='whole.png'))
+
+
         self.scroll_page = ScrollView()
-        self.scroll_page.size_hint_x = 100
+        self.note_page = NotePage(size_hint=(None, None), size=(self.width, self.width * 2 ** 0.5))
         self.scroll_page.add_widget(self.note_page)
         self.add_widget(self.scroll_page)
+        self.scroll_page.size_hint_y = 5
+
         self.keyboard = ImagePaste('img.png', self.width, self.height, (self.width, self.height / 5), (0, 0))
+        self.keyboard.pos_hint_y = 0.1
         self.add_widget(self.keyboard)
+
+        self.keyboard.size = (self.width, self.height / 5)
+        self.note_page.size = (self.width, self.width * 2 ** 0.5)
+
 
     # Обработка нажатий или движений
     def on_touch_down(self, touch):
@@ -159,6 +201,43 @@ class TextbookBox(BoxLayout):
         self.note_page.make_beat()
 
 
+    # Обработчики нажатий инструментов
+
+    def changing_duration(self, instance, duration):
+        self.note_page.current_duration = duration
+
+    def changing_pause(self, instance, duration, image):
+        y = self.note_page.height / 10 * 9 - self.note_page.current_string * (
+                                self.note_page.height / 6 + self.note_page.height // 100 * 8) - self.note_page.height // 100 * 5.5
+        if self.note_page.current_clef == 1:
+            with self.note_page.canvas:
+                pause = Image(source=image, allow_stretch=False, keep_ratio=True)
+                pause.pos = (self.note_page.current_pos_1 - self.note_page.each_note / 2, y)
+                self.note_page.add_widget(pause)
+
+                self.note_page.list_of_notes_bass.append(
+                    (8, self.note_page.current_pos_1, duration, 0))
+
+                self.note_page.current_pos_1 += self.note_page.each_note * (
+                        int(self.note_page.time_signature.split('/')[1]) /
+                        int(duration.split('/')[1]))
+
+        else:
+            with self.note_page.canvas:
+                pause = Image(source=image, allow_stretch=False, keep_ratio=True)
+                pause.pos = (self.note_page.current_pos_2 - self.note_page.each_note / 2, y - self.note_page.height / 12)
+                self.note_page.add_widget(pause)
+
+                self.note_page.list_of_notes_bass.append(
+                    (8, self.note_page.current_pos_2, duration, 0))
+
+                self.note_page.current_pos_2 += self.note_page.each_note * (
+                        int(self.note_page.time_signature.split('/')[1]) /
+                        int(duration.split('/')[1]))
+        self.note_page.make_beat()
+
+
+
 class NotePage(Widget):
     def __init__(self, **kwargs):
         super(NotePage, self).__init__(**kwargs)
@@ -189,14 +268,15 @@ class NotePage(Widget):
                     Line(points=(0, self.height - interval - i * self.height // 100, self.width,
                                  self.height - interval - i * self.height // 100), width=1.5)
                 if string % 2 == 0:
-                    self.clef = Image(source='treble_clef.png', allow_stretch=True, keep_ratio=False)
-                    self.clef.height = self.height // 20
-                    self.clef.width = self.width / 9
+                    clef = Image(source='treble_clef.png', allow_stretch=True, keep_ratio=False)
+                    clef.height = self.height // 20
+                    clef.width = self.width / 9
                 else:
-                    self.clef = Image(source='bass_clef.png', allow_stretch=False, keep_ratio=True)
-                    self.clef.height = self.height // 20
-                    self.clef.width = self.width / 9
-                self.clef.pos = (0, self.height - interval - 4 * self.height // 100)
+                    clef = Image(source='bass_clef.png', allow_stretch=False, keep_ratio=True)
+                    clef.height = self.height // 20
+                    clef.width = self.width / 9
+                clef.pos = (0, self.height - interval - 4 * self.height // 100)
+                self.add_widget(clef)
                 # self.time_signature_img = Image(source='bass_clef.png', allow_stretch=False, keep_ratio=True)
                 interval += self.height / 12
 
@@ -218,6 +298,7 @@ class NotePage(Widget):
                                      int(self.current_pos_1) + self.k_size_note - 2 * (index < 11) * self.k_size_note,
                                      y + self.k_size_note * 4 - 8 * (index < 11) * self.k_size_note), width=1.5)
                         self.changing_duration(index, y)
+                        # Дополнительные линии
                         if index % 2 == 0 and (index < 6 or index > 14):
                             Line(points=(
                                 int(self.current_pos_1) - self.k_size_note * 2, y,
@@ -262,10 +343,8 @@ class NotePage(Widget):
                                     width=1.5)
 
                         self.list_of_notes_treble.append((index, self.current_pos_1, self.current_duration, 0))
-                        print(self.current_pos_1, end=' ')
                         self.current_pos_1 += self.each_note * (int(self.time_signature.split('/')[1]) /
                                                                 int(self.current_duration.split('/')[1]))
-                        print(self.current_pos_1)
                         self.current_clef = 1
                     else:
                         index = [abs(touch.pos[1] - interval + (self.height / 24 + self.height // 100 * 4) + j) for j in
@@ -312,16 +391,17 @@ class NotePage(Widget):
 
     def changing_duration(self, index, y):
         with self.canvas:
-            if index > 10:
-                start_x, start_y = int(self.current_pos_1) + self.k_size_note - 2 * (
+            if int(self.current_duration.split('/')[1]) > 4:
+                if index > 10:
+                    start_x, start_y = int(self.current_pos_1) + self.k_size_note - 2 * (
+                                index < 11) * self.k_size_note, y + self.k_size_note * 4 - 8 * (index < 11) * self.k_size_note
+                    size_x, size_y = self.k_size_note * 2, self.k_size_note * 4
+                    Line(ellipse=(start_x, start_y - size_y / 2, size_x, size_y, 180, 270), width=1.5)
+                else:
+                    start_x, start_y = int(self.current_pos_1) + self.k_size_note - 2 * (
                             index < 11) * self.k_size_note, y + self.k_size_note * 4 - 8 * (index < 11) * self.k_size_note
-                size_x, size_y = self.k_size_note * 2, self.k_size_note * 4
-                Line(ellipse=(start_x, start_y - size_y / 2, size_x, size_y, 180, 270), width=1.5)
-            else:
-                start_x, start_y = int(self.current_pos_1) + self.k_size_note - 2 * (
-                        index < 11) * self.k_size_note, y + self.k_size_note * 4 - 8 * (index < 11) * self.k_size_note
-                size_x, size_y = self.k_size_note * 4, self.k_size_note * 4
-                Line(ellipse=(start_x - size_x / 2, start_y, size_x, size_y, 90, 180), width=1.5)
+                    size_x, size_y = self.k_size_note * 4, self.k_size_note * 4
+                    Line(ellipse=(start_x - size_x / 2, start_y, size_x, size_y, 90, 180), width=1.5)
 
 
 class ImagePaste(Widget):
@@ -340,12 +420,48 @@ class ImagePaste(Widget):
             self.image.pos = self.pos_
 
 
+
 class InstrumentsBox(StackLayout):
     def __init__(self):
         super().__init__()
-        for i in range(25):
-            btn = Button(text=str(i), width=40 + i * 5, size_hint=(None, 0.15))
-            self.add_widget(btn)
+        self.width = 60
+        self.hint_y = 1
+
+        self.save_file = Button(width=50, size_hint=(None, self.hint_y), background_normal='save_file.png') # text="Сохранить файл",
+        self.new_file = Button(width=50, size_hint=(None, self.hint_y), background_normal='add_file.png') #text="Новый файл",
+        self.draw = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='drawing.png') # text="Режим рисования",
+
+        self.choice_of_tonality = Button(width=50, size_hint=(None, self.hint_y)) #text="Выбор тональности",
+        self.choice_of_time_signature = Button(width=50, size_hint=(None, self.hint_y)) #text="Выбор размера",
+
+        self.flat = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='flat.png') # text="Бемоль",
+        self.sharp = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='sharp.png') # text="Диез",
+        self.natural = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='natural.png') #text="Бекар",
+
+        self.whole = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='whole.png') # text="Целая",
+        self.half = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='half.png') # text="Половинка",
+        self.quarter = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='quarter.png') # text="Четверь",
+        self.eighth = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='eighth.png') #text="Восьмая",
+        self.sixteenth = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='sixteenth.png') # text="Шестнадцая",
+        self.thirty_second = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='thirty_second.png') # text="Тридцать вторая",
+
+        self.whole_pause = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='whole.png') # text="Целая пауза",
+        self.half_pause = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='half.png') # text="Половинка пауза",
+        self.quarter_pause = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='quarter_pause.png') # text="Четверь пауза",
+        self.eighth_pause = Button(width=self.width, size_hint=(None, self.hint_y),background_normal='eighth_pause.png') # text="Восьмая пауза",
+        self.sixteenth_pause = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='sixteenth_pause.png') # text="Шестнадцая пауза",
+        self.thirty_second_pause = Button(width=self.width, size_hint=(None, self.hint_y), background_normal='thirty_second_pause.png') # text="Тридцать вторая пауза",
+
+
+        self.list_instruments = [self.flat, self.sharp, self.natural, self.whole, self.half, self.quarter, self.eighth,
+                                 self.sixteenth, self.thirty_second,
+                                 self.whole_pause, self.half_pause, self.quarter_pause, self.eighth_pause,
+                                 self.sixteenth_pause, self.thirty_second_pause]
+
+        for i in self.list_instruments:
+            self.add_widget(i)
+
+
 
 
 '''
