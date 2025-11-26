@@ -4,28 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b058f499-d695-46f6-855f-5c82d9e5c891" name="Changes" comment="pictures of durations part 1">
-      <change beforePath="$PROJECT_DIR$/123.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/add_file.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/bass_clef.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/drawing.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/eighth.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/eighth_pause.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/flat.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/half.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/img.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/natural.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/quarter.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/quarter_pause.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/save_file.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sharp.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sixteenth.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/sixteenth_pause.png" beforeDir="false" />
+    <list default="true" id="b058f499-d695-46f6-855f-5c82d9e5c891" name="Changes" comment="db part 1">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/db.db" beforeDir="false" afterPath="$PROJECT_DIR$/db.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/profile.py" beforeDir="false" afterPath="$PROJECT_DIR$/profile.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/recognize.py" beforeDir="false" afterPath="$PROJECT_DIR$/recognize.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/recorded.wav" beforeDir="false" afterPath="$PROJECT_DIR$/recorded.wav" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/sqlite.py" beforeDir="false" afterPath="$PROJECT_DIR$/sqlite.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/drawing.png" beforeDir="false" afterPath="$PROJECT_DIR$/templates/drawing.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/textbook.py" beforeDir="false" afterPath="$PROJECT_DIR$/textbook.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/thirty_second.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/thirty_second_pause.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/treble_clef.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/whole.png" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -252,7 +240,15 @@
       <option name="project" value="LOCAL" />
       <updated>1762714975030</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="db part 1">
+      <option name="closed" value="true" />
+      <created>1763675419597</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1763675419597</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -272,6 +268,7 @@
     <MESSAGE value="line, where very down or very up" />
     <MESSAGE value="arc of eighth" />
     <MESSAGE value="pictures of durations part 1" />
-    <option name="LAST_COMMIT_MESSAGE" value="pictures of durations part 1" />
+    <MESSAGE value="db part 1" />
+    <option name="LAST_COMMIT_MESSAGE" value="db part 1" />
   </component>
 </project>

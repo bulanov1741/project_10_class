@@ -25,7 +25,6 @@ class DataBase():
         ''')
         self.con.commit()
     def update(self, name, new_list):
-        print(new_list)
         self.cur.execute(f"INSERT INTO {name} (ind, pos, number_string, duration, signature, width_monitor) VALUES (?, ?, ?, ?, ?, ?)", new_list)
         self.con.commit()
 

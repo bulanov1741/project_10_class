@@ -1,6 +1,9 @@
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.label import Label
 from kivy.uix.screenmanager import Screen
+from kivy.uix.textinput import TextInput
 
 
 class ProfileScreen(Screen):
@@ -9,11 +12,53 @@ class ProfileScreen(Screen):
         self.theory_box = ProfileBox()
         self.add_widget(self.theory_box)
 
-class ProfileBox(BoxLayout):
-    def __init__(self):
-        super().__init__()
-        button_title = Button(
-            text="Профиль",
-            pos_hint={"center_x": 0.25, "center_y": 0.5},
+class ProfileBox(GridLayout):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.cols = 2
+        self.rows = 6
+        # Логин
+        self.name_label = Label(
+            text="Логин",
+            color=(0, 0, 1, 1),  # синий цвет
+            halign='center',
+            valign='middle'
         )
-        self.add_widget(button_title)
+        text_input = TextInput(hint_text='Введите логин', multiline=False, size_hint=(1, .8))
+        self.add_widget(self.name_label)
+        self.add_widget(text_input)
+        # Почта
+        self.name_label = Label(
+            text="Почта",
+            color=(0, 0, 1, 1),  # синий цвет
+            halign='center',
+            valign='middle'
+        )
+        text_input = TextInput(hint_text='Введите Email', multiline=False, size_hint=(1, .8))
+        self.add_widget(self.name_label)
+        self.add_widget(text_input)
+        #Пароль
+        self.name_label = Label(
+            text="Пароль",
+            color=(0, 0, 1, 1),  # синий цвет
+            halign='center',
+            valign='middle'
+        )
+        text_input = TextInput(hint_text='Введите пароль', multiline=False, size_hint=(1, .8), password=True)
+        self.add_widget(self.name_label)
+        self.add_widget(text_input)
+        #Имя
+        self.name_label = Label(
+            text="Имя",
+            color=(0, 0, 1, 1),  # синий цвет
+            halign='center',
+            valign='middle'
+        )
+        text_input = TextInput(hint_text='Введите имя', multiline=False, size_hint=(1, .8))
+        self.add_widget(self.name_label)
+        self.add_widget(text_input)
+        #Сохранение
+        self.button_save = Button(text="Сохранить")
+        self.button_cancel = Button(text="Отмена")
+        self.add_widget(self.button_cancel)
+        self.add_widget(self.button_save)

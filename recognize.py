@@ -99,6 +99,7 @@ class RecognizeBox(BoxLayout):
             if np.abs(spectrum)[index] > 300000:
                 freq = abs(freqs[index])
                 print(freq)
+                print(freq)
                 if abs(freq - 130.8) < 3:
                     print("До")
                 elif abs(freq) - 138.6 < 3:
