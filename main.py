@@ -93,7 +93,6 @@ class MainApp(App):
 if __name__ == "__main__":
     app = MainApp()
     app.run()
-    app.root.save_canvas_as_image()
 
 
 
