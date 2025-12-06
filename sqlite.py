@@ -31,3 +31,7 @@ class DataBase():
     def select(self, name):
         result = list(self.cur.execute(f"SELECT * FROM {name}").fetchall())
         return result
+
+    def delete(self, name, ind, pos, number_string):
+        self.cur.execute(f"DELETE FROM {name} WHERE ind=? AND pos=? AND number_string=?", (ind, pos, number_string))
+        self.con.commit()

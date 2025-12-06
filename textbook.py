@@ -3,6 +3,8 @@ from tkinter import filedialog
 
 import tkinter as tk
 from tkinter import filedialog
+
+from kivy.app import App
 from kivy.uix.image import Image
 from kivy.graphics import Color, Line, Rectangle, Ellipse
 from kivy.uix.boxlayout import BoxLayout
@@ -58,13 +60,13 @@ class TextbookBox(BoxLayout):
         self.add_widget(self.instruments)
         # Обработчики нажатий
         self.instruments.save_file.bind(on_press=self.save_file)
-        self.instruments.draw.bind(on_press=self.on_off_drawing_mode)
+        self.instruments.delete_note.bind(on_press=self.delete_last_note)
         # self.instruments.choice_of_tonality.bind(on_press=self.changing_screens_on_theory)
         # self.instruments.choice_of_time_signature.bind(on_press=self.changing_screens_on_theory)
         #
-        # self.instruments.flat.bind(on_press=self.changing_screens_on_theory)
-        # self.instruments.sharp.bind(on_press=self.changing_screens_on_theory)
-        # self.instruments.natural.bind(on_press=self.changing_screens_on_theory)
+        self.instruments.flat.bind(on_press=partial(self.adding_signature, value=-1))
+        self.instruments.sharp.bind(on_press=partial(self.adding_signature, value=1))
+        self.instruments.natural.bind(on_press=partial(self.adding_signature, value=0))
 
         self.instruments.whole.bind(on_press=partial(self.changing_duration, duration='1/1'))
         self.instruments.half.bind(on_press=partial(self.changing_duration, duration='1/2'))
@@ -187,8 +189,6 @@ class TextbookBox(BoxLayout):
         if file_path:
             return file_path
 
-
-
     def on_off_drawing_mode(self, instance):
         self.draw_mode = not self.draw_mode
 
@@ -219,7 +219,7 @@ class TextbookBox(BoxLayout):
                             int(self.note_page.current_pos_1) + self.note_page.k_size_note * 2, y), width=1.5)
                 self.note_page.list_of_notes_treble.append(
                     (16 - ind, self.note_page.current_pos_1, self.note_page.current_string_1,
-                     self.note_page.current_duration, 0))
+                     self.note_page.current_duration, 0, float(self.width)))
                 self.note_page.database.update('notepage_treble_1',
                                                (16 - ind, self.note_page.current_pos_1, self.note_page.current_string_1,
                                                 self.note_page.current_duration, 0, float(self.note_page.width)))
@@ -254,7 +254,7 @@ class TextbookBox(BoxLayout):
 
                 self.note_page.list_of_notes_bass.append(
                     (11 - ind, self.note_page.current_pos_2, self.note_page.current_string_2,
-                     self.note_page.current_duration, 0))
+                     self.note_page.current_duration, 0, float(self.width)))
                 self.note_page.database.update('notepage_bass_1',
                                                (11 - ind, self.note_page.current_pos_2, self.note_page.current_string_2,
                                                 self.note_page.current_duration, 0, float(self.note_page.width)))
@@ -274,7 +274,7 @@ class TextbookBox(BoxLayout):
         self.note_page.changing_pause(duration, image, self.note_page.current_clef)
         if self.note_page.current_clef == 1:
             self.note_page.list_of_notes_bass.append(
-                (8, self.note_page.current_pos_1, self.note_page.current_string_1, duration, 0))
+                (8, self.note_page.current_pos_1, self.note_page.current_string_1, duration, 0, float(self.width)))
 
             self.note_page.database.update('notepage_treble_1',
                                            (
@@ -289,7 +289,7 @@ class TextbookBox(BoxLayout):
 
         else:
             self.note_page.list_of_notes_bass.append(
-                (8, self.note_page.current_pos_2, self.note_page.current_string_2, duration, 0))
+                (8, self.note_page.current_pos_2, self.note_page.current_string_2, duration, 0, float(self.width)))
 
             self.note_page.database.update('notepage_treble_1',
                                            (
@@ -300,6 +300,77 @@ class TextbookBox(BoxLayout):
             self.note_page.current_pos_2 += self.note_page.each_note * (
                     int(self.note_page.time_signature.split('/')[1]) /
                     int(duration.split('/')[1]))
+
+    def delete_last_note(self, instance):
+        name = 'notepage_' + 'treble' * (self.note_page.current_clef == 1) + 'bass' * (
+                self.note_page.current_clef == 2) + '_1'
+        try:
+            if self.note_page.current_clef == 1:
+                ind = self.note_page.list_of_notes_treble[-1][0]
+                pos = self.note_page.list_of_notes_treble[-1][1]
+                number_string = self.note_page.list_of_notes_treble[-1][2]
+            else:
+                ind = self.note_page.list_of_notes_bass[-1][0]
+                pos = self.note_page.list_of_notes_bass[-1][1]
+                number_string = self.note_page.list_of_notes_bass[-1][2]
+            self.note_page.database.delete(name, ind, pos, number_string)
+            if self.note_page.current_clef == 1:
+                self.note_page.list_of_notes_treble.pop(-1)
+                print([i for i in self.note_page.list_of_notes_treble])
+                self.note_page.current_pos_1 = self.width / 9 + sum([
+                    self.note_page.each_note * (
+                            int(self.note_page.time_signature.split('/')[1]) /
+                            int(i[3].split('/')[1])) for i in self.note_page.list_of_notes_treble])
+            else:
+                self.note_page.list_of_notes_bass.pop(-1)
+                self.note_page.current_pos_2 = self.width / 9 + sum([
+                    self.note_page.each_note * (
+                            int(self.note_page.time_signature.split('/')[1]) /
+                            int(i[3].split('/')[1])) for i in self.note_page.list_of_notes_bass])
+            self.note_page.update_size(instance, 1)
+        except Exception as e:
+            print(e)
+            return None
+
+    def adding_signature(self, instance, value):
+        pos_x, pos_y = -1000, -1000
+        if self.note_page.current_clef == 1 and len(self.note_page.list_of_notes_treble) > 0:
+            pos_x = self.note_page.list_of_notes_treble[-1][1]
+            pos_y = self.note_page.height / 10 * 9 - self.note_page.current_string_1 * (
+                    self.note_page.height / 6 + self.note_page.height // 100 * 8) - self.note_page.height // 100 * \
+                    self.note_page.list_of_notes_treble[-1][0]
+        elif self.note_page.current_clef == 2 and len(self.note_page.list_of_notes_bass) > 0:
+            pos_x = self.note_page.list_of_notes_bass[-1][1]
+            pos_y = self.note_page.height / 10 * 9 - self.note_page.current_string_2 * (
+                    self.note_page.height / 6 + self.note_page.height // 100 * 8) - self.note_page.height // 100 * \
+                    self.note_page.list_of_notes_bass[-1][
+                        0] + self.note_page.height // 100 * 2.5 - self.note_page.height / 12 - self.note_page.k_size_note // 2
+        size_x = self.note_page.k_size_note * 3
+        size_y = self.note_page.k_size_note * 6
+        if value == -1:
+            with self.note_page.canvas:
+                sign = Image(source='templates/flat.png', allow_stretch=True, keep_ratio=False)
+                sign.pos = (pos_x - 1.5 * size_x, pos_y + size_y)
+                sign.size = (size_x, size_y)
+        elif value == 1:
+            with self.note_page.canvas:
+                sign = Image(source='templates/sharp.png', allow_stretch=True, keep_ratio=False)
+                sign.pos = (pos_x - 1.5 * size_x, pos_y + size_y)
+                sign.size = (size_x, size_y)
+        if self.note_page.current_clef == 1 and len(self.note_page.list_of_notes_treble) > 0:
+            x = self.note_page.list_of_notes_treble[-1]
+            self.note_page.list_of_notes_treble[-1] = ([(x[i] if i != 4 else value) for i in range(len(x))])
+            self.note_page.database.delete('notepage_treble_1', self.note_page.list_of_notes_treble[-1][0],
+                                           self.note_page.list_of_notes_treble[-1][1],
+                                           self.note_page.list_of_notes_treble[-1][2])
+            self.note_page.database.update('notepage_treble_1', self.note_page.list_of_notes_treble[-1])
+        elif self.note_page.current_clef == 2 and len(self.note_page.list_of_notes_bass) > 0:
+            x = self.note_page.list_of_notes_bass[-1]
+            self.note_page.list_of_notes_bass[-1] = ([(x[i] if i != 4 else value) for i in range(len(x))])
+            self.note_page.database.delete('notepage_bass_1', self.note_page.list_of_notes_bass[-1][0],
+                                           self.note_page.list_of_notes_bass[-1][1],
+                                           self.note_page.list_of_notes_bass[-1][2])
+            self.note_page.database.update('notepage_bass_1', self.note_page.list_of_notes_treble[-1])
 
 
 class NotePage(Widget):
@@ -361,8 +432,10 @@ class NotePage(Widget):
                 interval = self.height / 10 * 9 - current_string * (self.height / 6 + self.height // 100 * 8)
                 Color(rgba=(0, 0, 0, 1))
                 if ((self.height / 10 * 9 - self.current_string_1 * (
-                        self.height / 12 + self.height // 100 * 8)) + self.height // 48 >= touch.pos[1] >= ((self.height / 10 * 9 - self.current_string_1 * (
-                        self.height / 12 + self.height // 100 * 8)) - (self.height / 48 + self.height // 100 * 4))):
+                        self.height / 12 + self.height // 100 * 8)) + self.height // 48 >= touch.pos[1] >= (
+                        (self.height / 10 * 9 - self.current_string_1 * (
+                                self.height / 12 + self.height // 100 * 8)) - (
+                                self.height / 48 + self.height // 100 * 4))):
                     interval = self.height / 10 * 9 - self.current_string_1 * (
                             self.height / 12 + self.height // 100 * 8)
                     index = [abs(touch.pos[1] - interval + j) for j in self.y_pos].index(
@@ -427,7 +500,7 @@ class NotePage(Widget):
                                 width=1.5)
 
                     self.list_of_notes_treble.append(
-                        (index, self.current_pos_1, self.current_string_1, self.current_duration, 0))
+                        (index, self.current_pos_1, self.current_string_1, self.current_duration, 0, float(self.width)))
                     self.database.update('notepage_treble_1',
                                          (
                                              index, self.current_pos_1, self.current_string_1,
@@ -437,11 +510,13 @@ class NotePage(Widget):
                                                             int(self.current_duration.split('/')[1]))
                     self.current_clef = 1
                 elif (
-                    ((self.height / 10 * 9 - self.current_string_2 * (self.height / 12 + self.height // 100 * 8)) - (
-                            self.height / 48 + self.height // 100 * 4))) >= touch.pos[1] >= (self.height / 10 * 9 - self.current_string_2 * (self.height / 12 + self.height // 100 * 8)) - (
+                        ((self.height / 10 * 9 - self.current_string_2 * (
+                                self.height / 12 + self.height // 100 * 8)) - (
+                                 self.height / 48 + self.height // 100 * 4))) >= touch.pos[1] >= (
+                        self.height / 10 * 9 - self.current_string_2 * (self.height / 12 + self.height // 100 * 8)) - (
                         self.height / 24 + self.height // 100 * 11):
                     interval = (self.height / 10 * 9 - self.current_string_2 * (
-                                self.height / 12 + self.height // 100 * 8))
+                            self.height / 12 + self.height // 100 * 8))
                     index = [abs(touch.pos[1] - interval + (self.height / 24 + self.height // 100 * 4) + j) for j in
                              self.y_pos].index(
                         min([abs(touch.pos[1] - interval + (self.height / 24 + self.height // 100 * 4) + i) for i in
@@ -527,15 +602,17 @@ class NotePage(Widget):
 
     # Такты
     def make_beat(self):
-        count_strings = int(max(sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in self.list_of_notes_treble]),
-                        sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in
-                             self.list_of_notes_bass])) / int(
-                    self.time_signature.split('/')[0]) * int(self.time_signature.split('/')[1])) // 4
+        count_strings = int(
+            max(sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in self.list_of_notes_treble]),
+                sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in
+                     self.list_of_notes_bass])) / int(
+                self.time_signature.split('/')[0]) * int(self.time_signature.split('/')[1])) // 4
         for num_string in range(count_strings + 1):
             if num_string == count_strings:
-                count_beats = int(max(sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in self.list_of_notes_treble]),
-                            sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in
-                                 self.list_of_notes_bass])) / int(
+                count_beats = int(
+                    max(sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in self.list_of_notes_treble]),
+                        sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in
+                             self.list_of_notes_bass])) / int(
                         self.time_signature.split('/')[0]) * int(self.time_signature.split('/')[1])) % 4
             else:
                 count_beats = 4
@@ -556,12 +633,12 @@ class NotePage(Widget):
                                          self.height / 12 + self.height / 100 * 8) - (
                                          self.height / 24 + self.height / 100 * 8)), width=1.5)
         if self.current_string_1 < int(
-            sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in self.list_of_notes_treble]) / int(
-                self.time_signature.split('/')[0]) * int(self.time_signature.split('/')[1])) // 4:
+                sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in self.list_of_notes_treble]) / int(
+                    self.time_signature.split('/')[0]) * int(self.time_signature.split('/')[1])) // 4:
             self.current_pos_1 = self.width / 9
         if self.current_string_2 < int(
-            sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in self.list_of_notes_bass]) / int(
-                self.time_signature.split('/')[0]) * int(self.time_signature.split('/')[1])) // 4:
+                sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in self.list_of_notes_bass]) / int(
+                    self.time_signature.split('/')[0]) * int(self.time_signature.split('/')[1])) // 4:
             self.current_pos_2 = self.width / 9
         self.current_string_1 = int(
             sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in self.list_of_notes_treble]) / int(
@@ -591,9 +668,7 @@ class NotePage(Widget):
                     self.current_pos_2 - self.each_note / 2, y - self.height / 12)
                 self.add_widget(pause)
 
-
         self.make_beat()
-
 
     def changing_duration(self, index, y):
         with self.canvas:
@@ -742,8 +817,8 @@ class InstrumentsBox(StackLayout):
                                 background_normal='templates/save_file.png')  # text="Сохранить файл",
         self.new_file = Button(width=50, size_hint=(None, self.hint_y),
                                background_normal="templates/add_file.png")  # text="Новый файл",
-        self.draw = Button(width=self.width, size_hint=(None, self.hint_y),
-                           background_normal='templates/drawing.png')  # text="Режим рисования",
+        self.delete_note = Button(width=self.width, size_hint=(None, self.hint_y),
+                                  background_normal='templates/delete_note.png')  # text="Режим рисования",
 
         self.choice_of_tonality = Button(width=50, size_hint=(None, self.hint_y))  # text="Выбор тональности",
         self.choice_of_time_signature = Button(width=50, size_hint=(None, self.hint_y))  # text="Выбор размера",
@@ -781,8 +856,8 @@ class InstrumentsBox(StackLayout):
         self.thirty_second_pause = Button(width=self.width, size_hint=(None, self.hint_y),
                                           background_normal='templates/thirty_second_pause.png')  # text="Тридцать вторая пауза",
 
-        self.list_instruments = [self.save_file, self.new_file, self.draw,
-            self.flat, self.sharp, self.natural, self.whole, self.half, self.quarter, self.eighth,
+        self.list_instruments = [self.save_file, self.new_file, self.delete_note,
+                                 self.flat, self.sharp, self.natural, self.whole, self.half, self.quarter, self.eighth,
                                  self.sixteenth, self.thirty_second,
                                  self.whole_pause, self.half_pause, self.quarter_pause, self.eighth_pause,
                                  self.sixteenth_pause, self.thirty_second_pause]
