@@ -337,25 +337,25 @@ class TextbookBox(BoxLayout):
         if self.note_page.current_clef == 1 and len(self.note_page.list_of_notes_treble) > 0:
             pos_x = self.note_page.list_of_notes_treble[-1][1]
             pos_y = self.note_page.height / 10 * 9 - self.note_page.current_string_1 * (
-                    self.note_page.height / 6 + self.note_page.height // 100 * 8) - self.note_page.height // 100 * \
+                    self.note_page.height / 6 + self.note_page.height // 100 * 8) - self.note_page.height // 200 * \
                     self.note_page.list_of_notes_treble[-1][0]
         elif self.note_page.current_clef == 2 and len(self.note_page.list_of_notes_bass) > 0:
             pos_x = self.note_page.list_of_notes_bass[-1][1]
             pos_y = self.note_page.height / 10 * 9 - self.note_page.current_string_2 * (
-                    self.note_page.height / 6 + self.note_page.height // 100 * 8) - self.note_page.height // 100 * \
+                    self.note_page.height / 6 + self.note_page.height // 100 * 8) - self.note_page.height // 200 * \
                     self.note_page.list_of_notes_bass[-1][
-                        0] + self.note_page.height // 100 * 2.5 - self.note_page.height / 12 - self.note_page.k_size_note // 2
+                        0] - self.note_page.height / 12
         size_x = self.note_page.k_size_note * 3
         size_y = self.note_page.k_size_note * 6
         if value == -1:
             with self.note_page.canvas:
                 sign = Image(source='templates/flat.png', allow_stretch=True, keep_ratio=False)
-                sign.pos = (pos_x - 1.5 * size_x, pos_y + size_y)
+                sign.pos = (pos_x - 1.5 * size_x, pos_y)
                 sign.size = (size_x, size_y)
         elif value == 1:
             with self.note_page.canvas:
                 sign = Image(source='templates/sharp.png', allow_stretch=True, keep_ratio=False)
-                sign.pos = (pos_x - 1.5 * size_x, pos_y + size_y)
+                sign.pos = (pos_x - 1.5 * size_x, pos_y)
                 sign.size = (size_x, size_y)
         if self.note_page.current_clef == 1 and len(self.note_page.list_of_notes_treble) > 0:
             x = self.note_page.list_of_notes_treble[-1]
@@ -710,7 +710,7 @@ class NotePage(Widget):
                         int(i[3].split('/')[1]))
                 continue
             self.draw_note_filling_canvas(self.height / 10 * 9 - i[2] * (
-                    self.height / 12 + self.height // 100 * 8), i[0], i[1] / i[5] * self.width, i[3], 1)
+                    self.height / 12 + self.height // 100 * 8), i[0], i[1] / i[5] * self.width, i[3], i[4], 1)
         for i in self.list_of_notes_bass:
             if i[4] == 3:
                 if i[3] == '1/1':
@@ -730,9 +730,9 @@ class NotePage(Widget):
                         int(i[3].split('/')[1]))
                 continue
             self.draw_note_filling_canvas(self.height / 10 * 9 - i[2] * (
-                    self.height / 12 + self.height // 100 * 8), i[0], i[1], i[3], 2)
+                    self.height / 12 + self.height // 100 * 8), i[0], i[1], i[3], i[4], 2)
 
-    def draw_note_filling_canvas(self, y, ind, pos, duration, clef):
+    def draw_note_filling_canvas(self, y, ind, pos, duration, sign, clef):
         y -= (ind - 6) * self.height // 200
         if clef == 1:
             with self.canvas:
@@ -755,6 +755,8 @@ class NotePage(Widget):
                     Line(points=(
                         int(pos) - self.k_size_note * 2, y,
                         int(pos) + self.k_size_note * 2, y), width=1.5)
+
+                self.adding_signature(sign, self.current_pos_1, y)
 
                 self.current_pos_1 += self.each_note * (
                         int(self.time_signature.split('/')[1]) /
@@ -784,11 +786,28 @@ class NotePage(Widget):
                         pos + self.k_size_note * 2,
                         y - self.height / 12), width=1.5)
 
+                self.adding_signature(sign, self.current_pos_2, y - self.height / 12)
+
                 self.current_pos_2 += self.each_note * (
                         int(self.time_signature.split('/')[1]) /
                         int(duration.split('/')[
                                 1]))
         self.make_beat()
+
+
+    def adding_signature(self, value, pos_x, pos_y):
+        size_x = self.k_size_note * 3
+        size_y = self.k_size_note * 6
+        if value == -1:
+            with self.canvas:
+                sign = Image(source='templates/flat.png', allow_stretch=True, keep_ratio=False)
+                sign.pos = (pos_x - 1.5 * size_x, pos_y)
+                sign.size = (size_x, size_y)
+        elif value == 1:
+            with self.canvas:
+                sign = Image(source='templates/sharp.png', allow_stretch=True, keep_ratio=False)
+                sign.pos = (pos_x - 1.5 * size_x, pos_y)
+                sign.size = (size_x, size_y)
 
 
 class ImagePaste(Widget):
