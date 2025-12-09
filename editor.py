@@ -18,11 +18,11 @@ from const import Const
 from sqlite import DataBase
 
 
-class TextbookScreen(Screen):
-    def __init__(self):
+class EditorScreen(Screen):
+    def __init__(self, name_database='1'):
         super().__init__()
-        self.textbook_box = TextbookBox()
-        self.add_widget(self.textbook_box)
+        self.editor_box = EditorBox()
+        self.add_widget(self.editor_box)
 
         # Обновление размеров элементов при изменении размера виджета
         self.bind(size=self.update_size, pos=self.update_size)
@@ -31,7 +31,7 @@ class TextbookScreen(Screen):
         pass
 
 
-class TextbookBox(BoxLayout):
+class EditorBox(BoxLayout):
     def __init__(self):
         super().__init__()
         self.orientation = 'vertical'
@@ -106,7 +106,7 @@ class TextbookBox(BoxLayout):
     # Обработка нажатий или движений
 
     def on_touch_down(self, touch):
-        super(TextbookBox, self).on_touch_down(touch)
+        super(EditorBox, self).on_touch_down(touch)
         if not self.collide_point(*touch.pos):
             return False
         else:
@@ -691,6 +691,7 @@ class NotePage(Widget):
         return list(self.database.select(name_db))
 
     def filling_canvas(self):
+        self.current_pos_1, self.current_pos_2 = self.width / 9, self.width / 9
         for i in self.list_of_notes_treble:
             if i[4] == 3:
                 if i[3] == '1/1':

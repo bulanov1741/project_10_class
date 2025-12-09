@@ -4,10 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b058f499-d695-46f6-855f-5c82d9e5c891" name="Changes" comment="db part 1">
+    <list default="true" id="b058f499-d695-46f6-855f-5c82d9e5c891" name="Changes" comment="flat and sharp part 2">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/2.py" beforeDir="false" afterPath="$PROJECT_DIR$/2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db.db" beforeDir="false" afterPath="$PROJECT_DIR$/db.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/textbook.py" beforeDir="false" afterPath="$PROJECT_DIR$/textbook.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/recorded.wav" beforeDir="false" afterPath="$PROJECT_DIR$/recorded.wav" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/saved_db.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/textbook.py" beforeDir="false" afterPath="$PROJECT_DIR$/editor.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -178,8 +182,8 @@
     <recent_temporary>
       <list>
         <item itemvalue="Python.main" />
-        <item itemvalue="Python.4" />
         <item itemvalue="Python.2" />
+        <item itemvalue="Python.4" />
         <item itemvalue="Python.3" />
         <item itemvalue="Python.const" />
       </list>
@@ -242,7 +246,15 @@
       <option name="project" value="LOCAL" />
       <updated>1763675419597</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="flat and sharp part 2">
+      <option name="closed" value="true" />
+      <created>1765099389791</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1765099389791</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -263,6 +275,7 @@
     <MESSAGE value="arc of eighth" />
     <MESSAGE value="pictures of durations part 1" />
     <MESSAGE value="db part 1" />
-    <option name="LAST_COMMIT_MESSAGE" value="db part 1" />
+    <MESSAGE value="flat and sharp part 2" />
+    <option name="LAST_COMMIT_MESSAGE" value="flat and sharp part 2" />
   </component>
 </project>
