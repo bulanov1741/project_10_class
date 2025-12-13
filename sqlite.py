@@ -35,3 +35,6 @@ class DataBase():
     def delete(self, name, ind, pos, number_string):
         self.cur.execute(f"DELETE FROM {name} WHERE ind=? AND pos=? AND number_string=?", (ind, pos, number_string))
         self.con.commit()
+
+    def select_id_database(self):
+        return self.cur.execute(f"SELECT id FROM saved_database WHERE now_open = 1").fetchone()[0]

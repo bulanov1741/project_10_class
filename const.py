@@ -30,9 +30,56 @@ class Const():
         self.okt_7 = [float(i) for i in self.okt_7]
         self.okt_8 = [float(i) for i in self.okt_8]
 
+        self.all_tonalties = ['C-dur', 'G-dur', 'D-dur', 'A-dur', 'E-dur', 'H-dur', 'Fis-dur', 'Cis-dur', 'Gis-dur',
+                              'Dis-dur', 'Ais-dur', 'Es-dur', 'B-dur', 'F-dur', 'Des-dur', 'As-dur', 'Es-dur', 'B-dur',
+                              'F-dur', 'C-dur', 'a-moll', 'e-moll', 'h-moll', 'fis-moll', 'cis-moll', 'gis-moll',
+                              'dis-moll', 'ais-moll', 'es-moll', 'b-moll', 'f-moll', 'des-moll', 'as-moll', 'es-moll',
+                              'b-moll', 'f-moll', 'c-moll', 'g-moll', 'd-moll', 'a-moll']
 
         # for i in range(len(notes)):
         #     print(f'''{"el" * (i != 0)}if abs(freq - {okt_3[i]}) < 5:
         #     print("{notes[i]}")''')
 
 
+all_tonalties = '''C-dur
+G-dur
+D-dur
+A-dur
+E-dur
+H-dur
+Fis-dur
+Cis-dur
+Gis-dur
+Dis-dur
+Ais-dur
+Es-dur
+B-dur
+F-dur
+Des-dur
+As-dur
+Es-dur
+B-dur
+F-dur
+C-dur
+a-moll
+e-moll
+h-moll
+fis-moll
+cis-moll
+gis-moll
+dis-moll
+ais-moll
+es-moll
+b-moll
+f-moll
+des-moll
+as-moll
+es-moll
+b-moll
+f-moll
+c-moll
+g-moll
+d-moll
+a-moll
+'''.split()
+print(all_tonalties)
