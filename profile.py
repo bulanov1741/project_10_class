@@ -20,7 +20,7 @@ class ProfileBox(GridLayout):
         # Логин
         self.name_label = Label(
             text="Логин",
-            color=(0, 0, 1, 1),  # синий цвет
+            color=(1, 1, 1, 1),
             halign='center',
             valign='middle'
         )
@@ -30,7 +30,7 @@ class ProfileBox(GridLayout):
         # Почта
         self.name_label = Label(
             text="Почта",
-            color=(0, 0, 1, 1),  # синий цвет
+            color=(1, 1, 1, 1),
             halign='center',
             valign='middle'
         )
@@ -40,7 +40,7 @@ class ProfileBox(GridLayout):
         #Пароль
         self.name_label = Label(
             text="Пароль",
-            color=(0, 0, 1, 1),  # синий цвет
+            color=(1, 1, 1, 1),
             halign='center',
             valign='middle'
         )
@@ -50,7 +50,7 @@ class ProfileBox(GridLayout):
         #Имя
         self.name_label = Label(
             text="Имя",
-            color=(0, 0, 1, 1),  # синий цвет
+            color=(1, 1, 1, 1),
             halign='center',
             valign='middle'
         )

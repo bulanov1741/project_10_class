@@ -20,12 +20,12 @@ class MainBox(BoxLayout):
         self.screen_manager = ScreenManager()
         self.theory_screen = TheoryScreen()
         self.theory_screen.name = 'theory'
+        self.saved_db_screen = SavedDatabaseScreen()
+        self.saved_db_screen.name = 'saved_db'
         self.editor_screen = EditorScreen()
         self.editor_screen.name = 'editor'
         self.recognize_screen = RecognizeScreen()
         self.recognize_screen.name = 'recognize'
-        self.saved_db_screen = SavedDatabaseScreen()
-        self.saved_db_screen.name = 'saved_db'
         self.profile_screen = ProfileScreen()
         self.profile_screen.name = 'profile'
 

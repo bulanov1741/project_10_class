@@ -5,6 +5,7 @@ import tkinter as tk
 from tkinter import filedialog
 
 from kivy.app import App
+from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.graphics import Color, Line, Rectangle, Ellipse
 from kivy.uix.boxlayout import BoxLayout
@@ -361,24 +362,29 @@ class EditorBox(BoxLayout):
         if self.note_page.current_clef == 1 and len(self.note_page.list_of_notes_treble) > 0:
             x = self.note_page.list_of_notes_treble[-1]
             self.note_page.list_of_notes_treble[-1] = ([(x[i] if i != 4 else value) for i in range(len(x))])
-            self.note_page.database.delete(f'notepage_treble_{self.note_page.id_database}', self.note_page.list_of_notes_treble[-1][0],
+            self.note_page.database.delete(f'notepage_treble_{self.note_page.id_database}',
+                                           self.note_page.list_of_notes_treble[-1][0],
                                            self.note_page.list_of_notes_treble[-1][1],
                                            self.note_page.list_of_notes_treble[-1][2])
-            self.note_page.database.update(f'notepage_treble_{self.note_page.id_database}', self.note_page.list_of_notes_treble[-1])
+            self.note_page.database.update(f'notepage_treble_{self.note_page.id_database}',
+                                           self.note_page.list_of_notes_treble[-1])
         elif self.note_page.current_clef == 2 and len(self.note_page.list_of_notes_bass) > 0:
             x = self.note_page.list_of_notes_bass[-1]
             self.note_page.list_of_notes_bass[-1] = ([(x[i] if i != 4 else value) for i in range(len(x))])
-            self.note_page.database.delete(f'notepage_bass_{self.note_page.id_database}', self.note_page.list_of_notes_bass[-1][0],
+            self.note_page.database.delete(f'notepage_bass_{self.note_page.id_database}',
+                                           self.note_page.list_of_notes_bass[-1][0],
                                            self.note_page.list_of_notes_bass[-1][1],
                                            self.note_page.list_of_notes_bass[-1][2])
-            self.note_page.database.update(f'notepage_bass_{self.note_page.id_database}', self.note_page.list_of_notes_treble[-1])
-
+            self.note_page.database.update(f'notepage_bass_{self.note_page.id_database}',
+                                           self.note_page.list_of_notes_treble[-1])
 
     def select_tonality(self, instance, value):
         self.note_page.tonality = value
 
     def select_time_signature(self, instance, value):
         self.note_page.time_signature = value
+        self.note_page.update_size(1, 1)
+
 
 class NotePage(Widget):
     def __init__(self, **kwargs):
@@ -388,10 +394,11 @@ class NotePage(Widget):
         self.database = DataBase()
         self.id_database = self.database.select_id_database()
 
-        self.list_of_notes_treble = self.connecting_db(f'notepage_treble_{self.id_database}')  # Все ноты скрипичного ключа
+        self.list_of_notes_treble = self.connecting_db(
+            f'notepage_treble_{self.id_database}')  # Все ноты скрипичного ключа
         self.list_of_notes_bass = self.connecting_db(f'notepage_bass_{self.id_database}')  # Все ноты басового ключа
         self.time_signature = '4/4'  # Размер произведения
-        self.tonality = 'C-dur' # Тональность
+        self.tonality = 'C-dur'  # Тональность
         self.current_string_1 = 0  # Текущая строка в Скр. ключе
         self.current_string_2 = 0  # Текущая строка в Бас. ключе
         self.current_duration = '1/4'  # По умолчанию длительность
@@ -421,14 +428,21 @@ class NotePage(Widget):
                 if string % 2 == 0:
                     clef = Image(source='templates/treble_clef.png', allow_stretch=True, keep_ratio=False)
                     clef.height = self.height // 20
-                    clef.width = self.width / 15
+                    clef.width = self.width / 20
                 else:
                     clef = Image(source='templates/bass_clef.png', allow_stretch=False, keep_ratio=True)
                     clef.height = self.height // 20
-                    clef.width = self.width / 15
+                    clef.width = self.width / 20
                 clef.pos = (0, self.height - interval - 4 * self.height // 100)
                 self.add_widget(clef)
-                # self.time_signature_img = Image(source='bass_clef.png', allow_stretch=False, keep_ratio=True)
+                time_signature_label_1 = Label(text=self.time_signature.split('/')[0], font_name="D:/PycharmProjects/10_class/ZenDotsKir.ttf",
+                                               color=(0, 0, 0, 1), font_size=self.height / 50,
+                                               pos=(self.width / 45, self.height - interval - 4 * self.height // 100))
+                time_signature_label_2 = Label(text=self.time_signature.split('/')[1], font_name="D:/PycharmProjects/10_class/ZenDotsKir.ttf",
+                                               color=(0, 0, 0, 1), font_size=self.height / 50,
+                                               pos=(self.width / 45, self.height - interval - 7 * self.height // 100))
+                self.add_widget(time_signature_label_1)
+                self.add_widget(time_signature_label_2)
                 interval += self.height / 12
 
     def on_touch_down(self, touch):
@@ -805,7 +819,6 @@ class NotePage(Widget):
                                 1]))
         self.make_beat()
 
-
     def adding_signature(self, value, pos_x, pos_y):
         size_x = self.k_size_note * 3
         size_y = self.k_size_note * 6
@@ -849,15 +862,14 @@ class InstrumentsBox(StackLayout):
         self.box_choice = BoxLayout()
         self.box_choice.orientation = 'vertical'
         self.box_choice.size_hint_x = 1 / 18
-        self.choice_of_time_signature = Spinner(values=['4/4', '3/4', '2/4', '7/8', '6/8', '3/8', '2/2', '3/16', '5/8'], text='4/4')  # "Выбор тональности",
-        self.choice_of_tonality = Spinner(values=self.const.all_tonalties, text='C-dur')# "Выбор размера",
+        self.choice_of_time_signature = Spinner(values=['4/4', '3/4', '2/4', '7/8', '6/8', '3/8', '2/2', '3/16', '5/8'],
+                                                text='4/4')  # "Выбор тональности",
+        self.choice_of_tonality = Spinner(values=self.const.all_tonalties, text='C-dur')  # "Выбор размера",
         self.box_choice.add_widget(self.choice_of_tonality)
         self.box_choice.add_widget(self.choice_of_time_signature)
 
-
         self.delete_note = Button(size_hint=(1 / 18, self.hint_y),
                                   background_normal='templates/delete_note.png')  # text="Режим рисования",
-
 
         self.flat = Button(size_hint=(1 / 18, self.hint_y),
                            background_normal='templates/flat.png')  # text="Бемоль",
@@ -900,7 +912,6 @@ class InstrumentsBox(StackLayout):
 
         for i in self.list_instruments:
             self.add_widget(i)
-
 
 
 '''
