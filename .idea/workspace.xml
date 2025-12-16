@@ -5,17 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b058f499-d695-46f6-855f-5c82d9e5c891" name="Changes" comment="database part 1">
-      <change afterPath="$PROJECT_DIR$/templates/half_pause.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/whole_pause.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/const.py" beforeDir="false" afterPath="$PROJECT_DIR$/const.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/db.db" beforeDir="false" afterPath="$PROJECT_DIR$/db.db" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/editor.py" beforeDir="false" afterPath="$PROJECT_DIR$/editor.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/saved_db.py" beforeDir="false" afterPath="$PROJECT_DIR$/saved_db.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/sqlite.py" beforeDir="false" afterPath="$PROJECT_DIR$/sqlite.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/add_file.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/drawing.png" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

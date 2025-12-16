@@ -36,50 +36,25 @@ class Const():
                               'dis-moll', 'ais-moll', 'es-moll', 'b-moll', 'f-moll', 'des-moll', 'as-moll', 'es-moll',
                               'b-moll', 'f-moll', 'c-moll', 'g-moll', 'd-moll', 'a-moll']
 
+        self.all_tonalties_with_signature = [('C-dur', 0, 0), ('Cis-dur/His-dur', 7, 2), ('Dis-dur', 6, 2),
+                                             ('Ais-dur', 5, 2), ('Es-dur', 4, 2), ('H-dur', 3, 2), ('Fis-dur', 2, 2),
+                                             ('cis-moll', 1, 2), ('Ges-dur', 1, 1), ('Des-dur', 2, 1), ('As-dur', 3, 1),
+                                             ('Eses-dur', 4, 1), ('B-dur', 5, 1), ('F-dur', 1, 1), ('c-moll', 0, 0),
+                                             ('d-moll', 1, 1), ('e-moll', 1, 2), ('f-moll', 4, 1), ('g-moll', 2, 1),
+                                             ('a-moll', 0, 0), ('h-moll', 3, 2), ('b-moll', 5, 1)]
+        self.order_flat = [4, 1, 5, 2, 6, 3, 7]
+        self.order_sharp = [0, 3, -1, 2, 5, 1, 4]
         # for i in range(len(notes)):
         #     print(f'''{"el" * (i != 0)}if abs(freq - {okt_3[i]}) < 5:
         #     print("{notes[i]}")''')
 
 
-all_tonalties = '''C-dur
-G-dur
-D-dur
-A-dur
-E-dur
-H-dur
-Fis-dur
-Cis-dur
-Gis-dur
-Dis-dur
-Ais-dur
-Es-dur
-B-dur
-F-dur
-Des-dur
-As-dur
-Es-dur
-B-dur
-F-dur
-C-dur
-a-moll
-e-moll
-h-moll
-fis-moll
-cis-moll
-gis-moll
-dis-moll
-ais-moll
-es-moll
-b-moll
-f-moll
-des-moll
-as-moll
-es-moll
-b-moll
-f-moll
-c-moll
-g-moll
-d-moll
-a-moll
-'''.split()
-print(all_tonalties)
+with open('olimpiada.csv', "r") as file:
+    file.readline()
+    file.readline()
+    answer = []
+    for i in file.readlines():
+        i = i.replace(' ', '')
+        line = i.strip().split('|')
+        answer.append((line[1], int(line[2]), int(line[3])))
+print(answer)

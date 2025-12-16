@@ -435,14 +435,16 @@ class NotePage(Widget):
                     clef.width = self.width / 20
                 clef.pos = (0, self.height - interval - 4 * self.height // 100)
                 self.add_widget(clef)
-                time_signature_label_1 = Label(text=self.time_signature.split('/')[0], font_name="D:/PycharmProjects/10_class/ZenDotsKir.ttf",
-                                               color=(0, 0, 0, 1), font_size=self.height / 50,
-                                               pos=(self.width / 45, self.height - interval - 4 * self.height // 100))
-                time_signature_label_2 = Label(text=self.time_signature.split('/')[1], font_name="D:/PycharmProjects/10_class/ZenDotsKir.ttf",
-                                               color=(0, 0, 0, 1), font_size=self.height / 50,
-                                               pos=(self.width / 45, self.height - interval - 7 * self.height // 100))
-                self.add_widget(time_signature_label_1)
-                self.add_widget(time_signature_label_2)
+                if string == 0:
+                    time_signature_label_1 = Label(text=self.time_signature.split('/')[0], font_name="D:/PycharmProjects/10_class/ZenDotsKir.ttf",
+                                                   color=(0, 0, 0, 1), font_size=self.height / 50,
+                                                   pos=(self.width / 45, self.height - interval - 4 * self.height // 100))
+                    time_signature_label_2 = Label(text=self.time_signature.split('/')[1], font_name="D:/PycharmProjects/10_class/ZenDotsKir.ttf",
+                                                   color=(0, 0, 0, 1), font_size=self.height / 50,
+                                                   pos=(self.width / 45, self.height - interval - 7 * self.height // 100))
+
+                    self.add_widget(time_signature_label_1)
+                    self.add_widget(time_signature_label_2)
                 interval += self.height / 12
 
     def on_touch_down(self, touch):
@@ -477,7 +479,7 @@ class NotePage(Widget):
                             y + self.k_size_note // 2 - (index < 11) * self.k_size_note,
                             int(self.current_pos_1) + self.k_size_note - 2 * (index < 11) * self.k_size_note,
                             y + self.k_size_note * 4 - 8 * (index < 11) * self.k_size_note), width=1.5)
-                        self.changing_duration(index, y)
+                        self.changing_duration(index, y, self.current_pos_1, self.current_duration)
                     # Дополнительные линии
                     if index % 2 == 0 and (index < 6 or index > 14):
                         Line(points=(
@@ -559,6 +561,7 @@ class NotePage(Widget):
                             y + self.k_size_note // 2 - (index < 11) * self.k_size_note,
                             int(self.current_pos_2) + self.k_size_note - 2 * (index < 11) * self.k_size_note,
                             y + self.k_size_note * 4 - 8 * (index < 11) * self.k_size_note), width=1.5)
+                    self.changing_duration(index, y, self.current_pos_2, self.current_duration)
                     if index % 2 == 0 and (index < 6 or index > 16):
                         Line(points=(
                             int(self.current_pos_2) - self.k_size_note * 2, y,
@@ -694,17 +697,17 @@ class NotePage(Widget):
 
         self.make_beat()
 
-    def changing_duration(self, index, y):
+    def changing_duration(self, index, y, current_pos, duration):
         with self.canvas:
-            if int(self.current_duration.split('/')[1]) > 4:
+            if int(duration.split('/')[1]) > 4:
                 if index > 10:
-                    start_x, start_y = int(self.current_pos_1) + self.k_size_note - 2 * (
+                    start_x, start_y = int(current_pos) + self.k_size_note - 2 * (
                             index < 11) * self.k_size_note, y + self.k_size_note * 4 - 8 * (
                                                index < 11) * self.k_size_note
                     size_x, size_y = self.k_size_note * 2, self.k_size_note * 4
                     Line(ellipse=(start_x, start_y - size_y / 2, size_x, size_y, 180, 270), width=1.5)
                 else:
-                    start_x, start_y = int(self.current_pos_1) + self.k_size_note - 2 * (
+                    start_x, start_y = int(current_pos) + self.k_size_note - 2 * (
                             index < 11) * self.k_size_note, y + self.k_size_note * 4 - 8 * (
                                                index < 11) * self.k_size_note
                     size_x, size_y = self.k_size_note * 4, self.k_size_note * 4
@@ -770,6 +773,7 @@ class NotePage(Widget):
                         int(pos) - self.k_size_note,
                         y - self.k_size_note // 2),
                         size=(self.k_size_note * 2, self.k_size_note))
+                    self.changing_duration(ind, y, pos, duration)
                 if int(duration.split('/')[1]) > 1:
                     Line(points=(int(pos) - (ind < 11) * self.k_size_note + (ind >= 11) * self.k_size_note,
                                  y + self.k_size_note // 2 - (ind < 11) * self.k_size_note,
@@ -804,6 +808,7 @@ class NotePage(Widget):
                                  int(pos) - (ind < 11) * self.k_size_note + (ind >= 11) * self.k_size_note,
                                  y - self.height / 12 + self.k_size_note * 4 - 8 * (ind < 11) * self.k_size_note),
                          width=1.5)
+                self.changing_duration(ind, y - self.height / 12, pos, duration)
                 if ind % 2 == 0 and (ind < 6 or ind > 14):
                     Line(points=(
                         int(pos) - self.k_size_note * 2,
