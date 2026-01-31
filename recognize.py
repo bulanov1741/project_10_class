@@ -1,9 +1,12 @@
+import sqlite3
 import time
+from datetime import datetime
 
 import numpy as np
 import pyaudio
 import wave
 
+from kivy.animation import Animation
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
@@ -12,25 +15,21 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 
 from const import Const
+from sqlite import DataBase
 
 
 class RecognizeBox(BoxLayout):
     def __init__(self):
         super().__init__()
-        button_recognition = Button(
-            text=">",
-            pos_hint={"center_x": 0.25, "center_y": 0.5},
-        )
-        button_tuning = Button(
-            text="+",
-            pos_hint={"center_x": 0.75, "center_y": 0.5},
+        self.orientation = 'vertical'
+        self.button_recognition = Button(
+            text="Начать",
+            pos_hint={"center_x": 0.5, "center_y": 0.5},
         )
 
-        button_recognition.bind(on_press=self.recognition)
-        button_tuning.bind(on_press=self.tuning)
+        self.button_recognition.bind(on_press=self.recognition)
 
-        self.add_widget(button_recognition)
-        self.add_widget(button_tuning)
+        self.add_widget(self.button_recognition)
 
 
     def mi(self, *args):
@@ -65,6 +64,20 @@ class RecognizeBox(BoxLayout):
 
     # Распознание нот
     def recognition(self, instance):
+        anim = Animation(size_hint=(1.2, 1.2)) + Animation(size_hint=(1, 1))
+        anim.start(self.button_recognition)
+        # Лист для записи расшифрованного
+        self.note_database = DataBase()
+        self.con = sqlite3.connect("db.db")
+        self.cur = self.con.cursor()
+        self.name = f'notepage_treble_{self.adding_note_page_recognize()}'
+        self.note_database.create(self.name)
+        self.pos_x = 0
+
+        # Частоты нот
+        self.const = Const()
+
+
         # имя файла для записи
         filename = "recorded.wav"
         # установить размер блока в 1024 сэмпла
@@ -85,7 +98,7 @@ class RecognizeBox(BoxLayout):
                         output=True,
                         frames_per_buffer=chunk)
         frames = []
-        print("Recording...")
+        self.button_recognition.text = 'Идет запись'
         for i in range(int(44100 / chunk * record_seconds)):
             data = stream.read(chunk)
             # преобразование байтовых данных в массив numpy
@@ -98,37 +111,90 @@ class RecognizeBox(BoxLayout):
             index = np.argmax(np.abs(spectrum))
             if np.abs(spectrum)[index] > 300000:
                 freq = abs(freqs[index])
-                print(freq)
-                print(freq)
-                if abs(freq - 130.8) < 3:
+                mini, min_ind = 10000, 0
+                for j in range(len(self.const.all_freq)):
+                    if mini > abs(freq - self.const.all_freq[j]):
+                        mini = abs(freq - self.const.all_freq[j])
+                        min_ind = j % 12
+
+                if min_ind == 0:
                     print("До")
-                elif abs(freq) - 138.6 < 3:
+                    self.note_database.update(self.name,
+                                                   [16, self.pos_x,
+                                                    '1/4', 0])
+                    self.pos_x += 1
+                elif min_ind == 1:
+                    self.note_database.update(self.name,
+                                              [16, self.pos_x,
+                                               '1/4', 1])
+                    self.pos_x += 1
                     print("До#")
-                elif abs(freq - 146.8) < 3:
+                elif min_ind == 2:
                     print("Ре")
-                elif abs(freq - 155.6) < 3:
+                    self.note_database.update(self.name,
+                                              [15, self.pos_x,
+                                               '1/4', 0])
+                    self.pos_x += 1
+                elif min_ind == 3:
                     print("Ре#")
-                elif abs(freq - 164.8) < 3:
+                    self.note_database.update(self.name,
+                                              [15, self.pos_x,
+                                               '1/4', 1])
+                    self.pos_x += 1
+                elif min_ind == 4:
                     print("Ми")
-                elif abs(freq - 174.6) < 3:
+                    self.note_database.update(self.name,
+                                              [14, self.pos_x,
+                                               '1/4', 0])
+                    self.pos_x += 1
+                elif min_ind == 5:
                     print("Фа")
-                elif abs(freq - 185.0) < 3:
+                    self.note_database.update(self.name,
+                                              [13, self.pos_x,
+                                               '1/4', 0])
+                    self.pos_x += 1
+                elif min_ind == 6:
                     print("Фа#")
-                elif abs(freq - 196.0) < 3:
+                    self.note_database.update(self.name,
+                                              [13, self.pos_x,
+                                               '1/4', 1])
+                    self.pos_x += 1
+                    self.con.commit()
+                elif min_ind == 7:
                     print("Соль")
-                elif abs(freq - 207.7) < 3:
+                    self.note_database.update(self.name,
+                                              [12, self.pos_x,
+                                               '1/4', 0])
+                    self.pos_x += 1
+                elif min_ind == 8:
                     print("Соль#")
-                elif abs(freq - 220.0) < 3:
+                    self.note_database.update(self.name,
+                                              [12, self.pos_x,
+                                               '1/4', 1])
+                    self.pos_x += 1
+                elif min_ind == 9:
                     print("Ля")
-                elif abs(freq - 233.1) < 3:
+                    self.note_database.update(self.name,
+                                              [11, self.pos_x,
+                                               '1/4', 0])
+                    self.pos_x += 1
+                elif min_ind == 10:
                     print("Ля#")
-                elif abs(freq - 246.9) < 3:
+                    self.note_database.update(self.name,
+                                              [11, self.pos_x,
+                                               '1/4', 1])
+                    self.pos_x += 1
+                elif min_ind == 11:
                     print("Си")
+                    self.note_database.update(self.name,
+                                              [10, self.pos_x,
+                                               '1/4', 0])
+                    self.pos_x += 1
 
             # если вы хотите слышать свой голос во время записи
             # stream.write(data)
             frames.append(data)
-        print("Finished recording.")
+        self.button_recognition.text = 'Запись окончена'
         # остановить и закрыть поток
         stream.stop_stream()
         stream.close()
@@ -146,7 +212,25 @@ class RecognizeBox(BoxLayout):
         # записываем кадры как байты
         wf.writeframes(b"".join(frames))
         # закрыть файл
+        self.con.close()
         wf.close()
+        time.sleep(5)
+        self.button_recognition.text = 'Начать запись'
+        ret = 0
+
+    def adding_note_page_recognize(self):
+        name_id = len([i[0] for i in list(self.cur.execute('SELECT ID FROM saved_database WHERE name LIKE "Распознанный лист%"').fetchall())]) + 1
+        max_id = max([i[0] for i in list(self.cur.execute('SELECT ID FROM saved_database').fetchall())])
+        self.cur.execute(
+            f"INSERT INTO saved_database (id, name, author, time_created, now_open) VALUES (?, ?, ?, ?, ?)",
+            [max_id + 1, f"Распознанный лист({name_id})",
+             self.note_database.select_author(),
+             datetime.now().strftime("%H:%M:%S|%d.%m.%Y"), 0])
+        self.con.commit()
+        return max_id + 1
+
+
+
 
     def tuning(self, instance):
         const = Const()

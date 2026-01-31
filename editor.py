@@ -1,3 +1,5 @@
+import smtplib
+from email.message import EmailMessage
 from functools import partial
 from tkinter import filedialog
 
@@ -5,15 +7,18 @@ import tkinter as tk
 from tkinter import filedialog
 
 from kivy.app import App
+from kivy.core.window import Window
 from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.graphics import Color, Line, Rectangle, Ellipse
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
+from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.spinner import Spinner
 from kivy.uix.stacklayout import StackLayout
+from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 
 from const import Const
@@ -113,9 +118,9 @@ class EditorBox(BoxLayout):
             return False
         else:
             if self.note_page.current_clef == 1:
-                current_string = self.note_page.current_string_1
+                x_pos = self.note_page.x_pos_1
             else:
-                current_string = self.note_page.current_string_2
+                x_pos = self.note_page.x_pos_2
             if touch.pos[1] <= self.height / 5:
                 if touch.button == 'left':
                     if touch.pos[1] >= self.height / 10 and (
@@ -134,38 +139,45 @@ class EditorBox(BoxLayout):
                             self.width / 28 * 23 <= touch.pos[0] <= self.width / 28 * 25):
                         print("Ля# / Сиb")
                     elif touch.pos[0] <= self.width / 7:
-                        self.draw_note(self.note_page.height / 10 * 9 - current_string * (
-                                self.note_page.height / 6 + self.note_page.height // 100 * 8) - self.note_page.height // 100 * 5,
+                        self.draw_note(self.note_page.height / 10 * 9 - (x_pos // (
+                                int(self.note_page.time_signature.split('/')[0]) * self.note_page.scale)) * (
+                                               self.note_page.height / 6) - self.note_page.height // 100 * 5,
                                        0)
                         print("До")
                     elif touch.pos[0] <= self.width / 7 * 2:
-                        self.draw_note(self.note_page.height / 10 * 9 - current_string * (
-                                self.note_page.height / 6 + self.note_page.height // 100 * 8) - self.note_page.height // 100 * 4.5,
+                        self.draw_note(self.note_page.height / 10 * 9 - (x_pos // (
+                                int(self.note_page.time_signature.split('/')[0]) * self.note_page.scale)) * (
+                                               self.note_page.height / 6) - self.note_page.height // 100 * 4.5,
                                        1)
                         print("Ре")
                     elif touch.pos[0] <= self.width / 7 * 3:
-                        self.draw_note(self.note_page.height / 10 * 9 - current_string * (
-                                self.note_page.height / 6 + self.note_page.height // 100 * 8) - self.note_page.height // 100 * 4,
+                        self.draw_note(self.note_page.height / 10 * 9 - (x_pos // (
+                                int(self.note_page.time_signature.split('/')[0]) * self.note_page.scale)) * (
+                                               self.note_page.height / 6) - self.note_page.height // 100 * 4,
                                        2)
                         print("Ми")
                     elif touch.pos[0] <= self.width / 7 * 4:
-                        self.draw_note(self.note_page.height / 10 * 9 - current_string * (
-                                self.note_page.height / 6 + self.note_page.height // 100 * 8) - self.note_page.height // 100 * 3.5,
+                        self.draw_note(self.note_page.height / 10 * 9 - (x_pos // (
+                                int(self.note_page.time_signature.split('/')[0]) * self.note_page.scale)) * (
+                                               self.note_page.height / 6) - self.note_page.height // 100 * 3.5,
                                        3)
                         print("Фа")
                     elif touch.pos[0] <= self.width / 7 * 5:
-                        self.draw_note(self.note_page.height / 10 * 9 - current_string * (
-                                self.note_page.height / 6 + self.note_page.height // 100 * 8) - self.note_page.height // 100 * 3,
+                        self.draw_note(self.note_page.height / 10 * 9 - (x_pos // (
+                                int(self.note_page.time_signature.split('/')[0]) * self.note_page.scale)) * (
+                                               self.note_page.height / 6) - self.note_page.height // 100 * 3,
                                        4)
                         print("Соль")
                     elif touch.pos[0] <= self.width / 7 * 6:
-                        self.draw_note(self.note_page.height / 10 * 9 - current_string * (
-                                self.note_page.height / 6 + self.note_page.height // 100 * 8) - self.note_page.height // 100 * 2.5,
+                        self.draw_note(self.note_page.height / 10 * 9 - (x_pos // (
+                                int(self.note_page.time_signature.split('/')[0]) * self.note_page.scale)) * (
+                                               self.note_page.height / 6) - self.note_page.height // 100 * 2.5,
                                        5)
                         print("Ля")
                     elif touch.pos[0] <= self.width:
-                        self.draw_note(self.note_page.height / 10 * 9 - current_string * (
-                                self.note_page.height / 6 + self.note_page.height // 100 * 8) - self.note_page.height // 100 * 2,
+                        self.draw_note(self.note_page.height / 10 * 9 - (x_pos // (
+                                int(self.note_page.time_signature.split('/')[0]) * self.note_page.scale)) * (
+                                               self.note_page.height / 6) - self.note_page.height // 100 * 2,
                                        6)
                         print("Си")
             return True
@@ -175,6 +187,34 @@ class EditorBox(BoxLayout):
         file = self.select_save_location()
         if file:
             self.note_page.export_to_png(file)
+            self.sending_by_mail(file)
+
+    # Отправка файла
+    def sending_by_mail(self, file_name):
+        recipient = self.note_page.database.select_email()
+        if recipient != '':
+            topic = self.note_page.database.select_title()
+            sender = 'notebasic@yandex.ru'
+            sender_password = 'kvqgsnmafyrjuvus'
+            mail_lib = smtplib.SMTP_SSL('smtp.yandex.ru', 465)
+            mail_lib.login(sender, sender_password)
+            msg = EmailMessage()
+            msg['From'] = sender
+            msg['To'] = recipient
+            msg['Subject'] = topic
+            with open(file_name, "rb") as file:
+                img_data = file.read()
+            msg.add_attachment(img_data, maintype='image', subtype='png')
+            mail_lib.send_message(msg)
+            mail_lib.quit()
+            self.show_notification("Файл успешно отправлен")
+        else:
+            self.show_notification("Укажите адрес почтового ящика в разделе Профиль")
+
+    # Показ уведомлений
+    def show_notification(self, text):
+        popup = Popup(title='Уведомление', content=Label(text=text), size_hint=(None, None), size=(400, 400))
+        popup.open()
 
     # Выбор место сохранения
     def select_save_location(self):
@@ -200,71 +240,67 @@ class EditorBox(BoxLayout):
                 Color(0, 0, 0, 1)
                 if int(self.note_page.current_duration.split('/')[1]) < 4:
                     Line(ellipse=(
-                        int(self.note_page.current_pos_1) - self.note_page.k_size_note,
+                        int(self.note_page.current_pos_1()) - self.note_page.k_size_note,
                         y - self.note_page.k_size_note // 2,
-                        self.note_page.k_size_note * 2, self.note_page.k_size_note))
+                        self.note_page.k_size_note * 2, self.note_page.k_size_note), width=1.5)
                 else:
                     Ellipse(pos=(
-                        int(self.note_page.current_pos_1) - self.note_page.k_size_note,
+                        int(self.note_page.current_pos_1()) - self.note_page.k_size_note,
                         y - self.note_page.k_size_note // 2),
                         size=(self.note_page.k_size_note * 2, self.note_page.k_size_note))
                 if int(self.note_page.current_duration.split('/')[1]) > 1:
                     Line(points=(
-                        int(self.note_page.current_pos_1) + self.note_page.k_size_note,
+                        int(self.note_page.current_pos_1()) + self.note_page.k_size_note,
                         y + self.note_page.k_size_note // 2,
-                        int(self.note_page.current_pos_1) + self.note_page.k_size_note,
+                        int(self.note_page.current_pos_1()) + self.note_page.k_size_note,
                         y + self.note_page.k_size_note * 4),
                         width=1.5)
                     if ind % 2 == 0 and (ind > 12 or ind < 2):
                         Line(points=(
-                            int(self.note_page.current_pos_1) - self.note_page.k_size_note * 2, y,
-                            int(self.note_page.current_pos_1) + self.note_page.k_size_note * 2, y), width=1.5)
+                            int(self.note_page.current_pos_1()) - self.note_page.k_size_note * 2, y,
+                            int(self.note_page.current_pos_1()) + self.note_page.k_size_note * 2, y), width=1.5)
                 self.note_page.list_of_notes_treble.append(
-                    (16 - ind, self.note_page.current_pos_1, self.note_page.current_string_1,
-                     self.note_page.current_duration, 0, float(self.width)))
-                self.note_page.database.update(f'notepage_treble_{self.notepage.id_database}',
-                                               (16 - ind, self.note_page.current_pos_1, self.note_page.current_string_1,
-                                                self.note_page.current_duration, 0, float(self.note_page.width)))
-                self.note_page.current_pos_1 += self.note_page.each_note * (
-                        int(self.note_page.time_signature.split('/')[1]) /
-                        int(self.note_page.current_duration.split('/')[
-                                1]))
+                    (16 - ind, self.note_page.x_pos_1,
+                     self.note_page.current_duration, 0,))
+                self.note_page.database.update(f'notepage_treble_{self.note_page.id_database}',
+                                               (16 - ind, self.note_page.x_pos_1,
+                                                self.note_page.current_duration, 0))
+                self.note_page.x_pos_1 += int(self.note_page.time_signature.split('/')[1]) / int(
+                    self.note_page.current_duration.split('/')[1])
         else:
             with self.note_page.canvas:
                 Color(0, 0, 0, 1)
                 if int(self.note_page.current_duration.split('/')[1]) < 4:
                     Line(ellipse=(
-                        int(self.note_page.current_pos_2) - self.note_page.k_size_note,
+                        int(self.note_page.current_pos_2()) - self.note_page.k_size_note,
                         y + self.note_page.height // 100 * 2.5 - self.note_page.height / 12 - self.note_page.k_size_note // 2,
-                        self.note_page.k_size_note * 2, self.note_page.k_size_note))
+                        self.note_page.k_size_note * 2, self.note_page.k_size_note), width=1.5)
                 else:
-                    Ellipse(pos=(int(self.note_page.current_pos_2) - self.note_page.k_size_note,
+                    Ellipse(pos=(int(self.note_page.current_pos_2()) - self.note_page.k_size_note,
                                  y + self.note_page.height // 100 * 2.5 - self.note_page.height / 12 - self.note_page.k_size_note // 2),
                             size=(self.note_page.k_size_note * 2, self.note_page.k_size_note))
                 if int(self.note_page.current_duration.split('/')[1]) > 1:
-                    Line(points=(int(self.note_page.current_pos_2) + self.note_page.k_size_note,
+                    Line(points=(int(self.note_page.current_pos_2()) + self.note_page.k_size_note,
                                  y + self.note_page.height // 100 * 2.5 - self.note_page.height / 12 + self.note_page.k_size_note // 2,
-                                 int(self.note_page.current_pos_2) + self.note_page.k_size_note,
+                                 int(self.note_page.current_pos_2()) + self.note_page.k_size_note,
                                  y + self.note_page.height // 100 * 2.5 - self.note_page.height / 12 + self.note_page.k_size_note * 4),
                          width=1.5)
                     if ind % 2 == 1 and (ind > 6 or ind < -3):
                         Line(points=(
-                            int(self.note_page.current_pos_2) - self.note_page.k_size_note * 2,
+                            int(self.note_page.current_pos_2()) - self.note_page.k_size_note * 2,
                             y + self.note_page.height // 100 * 2.5 - self.note_page.height / 12,
-                            int(self.note_page.current_pos_2) + self.note_page.k_size_note * 2,
+                            int(self.note_page.current_pos_2()) + self.note_page.k_size_note * 2,
                             y + self.note_page.height // 100 * 2.5 - self.note_page.height / 12), width=1.5)
 
                 self.note_page.list_of_notes_bass.append(
-                    (11 - ind, self.note_page.current_pos_2, self.note_page.current_string_2,
-                     self.note_page.current_duration, 0, float(self.width)))
+                    (11 - ind, self.note_page.x_pos_2,
+                     self.note_page.current_duration, 0))
                 self.note_page.database.update(f'notepage_bass_{self.note_page.id_database}',
-                                               (11 - ind, self.note_page.current_pos_2, self.note_page.current_string_2,
-                                                self.note_page.current_duration, 0, float(self.note_page.width)))
+                                               (11 - ind, self.note_page.x_pos_2,
+                                                self.note_page.current_duration, 0))
 
-                self.note_page.current_pos_2 += self.note_page.each_note * (
-                        int(self.note_page.time_signature.split('/')[1]) /
-                        int(self.note_page.current_duration.split('/')[
-                                1]))
+                self.note_page.x_pos_2 += int(self.note_page.time_signature.split('/')[1]) / int(
+                    self.note_page.current_duration.split('/')[1])
         self.note_page.make_beat()
 
     # Обработчики нажатий инструментов
@@ -276,77 +312,77 @@ class EditorBox(BoxLayout):
         self.note_page.changing_pause(duration, image, self.note_page.current_clef)
         if self.note_page.current_clef == 1:
             self.note_page.list_of_notes_bass.append(
-                (8, self.note_page.current_pos_1, self.note_page.current_string_1, duration, 0, float(self.width)))
+                (8, self.note_page.x_pos_2, duration, 0))
 
             self.note_page.database.update(f'notepage_treble_{self.note_page.id_database}',
                                            (
-                                               0, self.note_page.current_pos_1, self.note_page.current_string_1,
+                                               0, self.note_page.x_pos_2,
                                                self.note_page.current_duration, 3,
-                                               float(self.width)))
+                                           ))
 
-            self.note_page.current_pos_1 += self.note_page.each_note * (
-                    int(self.note_page.time_signature.split('/')[1]) /
-                    int(duration.split('/')[1]))
+            self.note_page.x_pos_1 += int(self.note_page.time_signature.split('/')[1]) / int(
+                self.note_page.current_duration.split('/')[1])
 
 
         else:
             self.note_page.list_of_notes_bass.append(
-                (8, self.note_page.current_pos_2, self.note_page.current_string_2, duration, 0, float(self.width)))
+                (8, self.note_page.x_pos_2, duration, 0))
 
             self.note_page.database.update(f'notepage_bass_{self.note_page.id_database}',
                                            (
-                                               0, self.note_page.current_pos_1, self.note_page.current_string_1,
+                                               0, self.note_page.x_pos_2,
                                                self.note_page.current_duration, 3,
-                                               float(self.width)))
+                                           ))
 
-            self.note_page.current_pos_2 += self.note_page.each_note * (
-                    int(self.note_page.time_signature.split('/')[1]) /
-                    int(duration.split('/')[1]))
+            self.note_page.x_pos_2 += int(self.note_page.time_signature.split('/')[1]) / int(
+                self.note_page.current_duration.split('/')[1])
 
     def delete_last_note(self, instance):
         name = 'notepage_' + 'treble' * (self.note_page.current_clef == 1) + 'bass' * (
-                self.note_page.current_clef == 2) + '_1'
-        try:
-            if self.note_page.current_clef == 1:
+                self.note_page.current_clef == 2) + '_' + str(self.note_page.id_database)
+        if self.note_page.current_clef == 1:
+            if len(self.note_page.list_of_notes_treble) > 0:
                 ind = self.note_page.list_of_notes_treble[-1][0]
                 pos = self.note_page.list_of_notes_treble[-1][1]
-                number_string = self.note_page.list_of_notes_treble[-1][2]
-            else:
+                self.note_page.database.delete(name, ind, pos)
+                self.note_page.x_pos_1 -= int(self.note_page.time_signature.split('/')[1]) / int(
+                    self.note_page.list_of_notes_treble[-1][2].split('/')[1])
+                self.note_page.list_of_notes_treble.pop(-1)
+        else:
+            if len(self.note_page.list_of_notes_bass) > 0:
                 ind = self.note_page.list_of_notes_bass[-1][0]
                 pos = self.note_page.list_of_notes_bass[-1][1]
-                number_string = self.note_page.list_of_notes_bass[-1][2]
-            self.note_page.database.delete(name, ind, pos, number_string)
-            if self.note_page.current_clef == 1:
-                self.note_page.list_of_notes_treble.pop(-1)
-                print([i for i in self.note_page.list_of_notes_treble])
-                self.note_page.current_pos_1 = self.width / 9 + sum([
-                    self.note_page.each_note * (
-                            int(self.note_page.time_signature.split('/')[1]) /
-                            int(i[3].split('/')[1])) for i in self.note_page.list_of_notes_treble])
-            else:
+                self.note_page.database.delete(name, ind, pos)
+                self.note_page.x_pos_2 -= int(self.note_page.time_signature.split('/')[1]) / int(
+                    self.note_page.list_of_notes_bass[-1][2].split('/')[1])
                 self.note_page.list_of_notes_bass.pop(-1)
-                self.note_page.current_pos_2 = self.width / 9 + sum([
-                    self.note_page.each_note * (
-                            int(self.note_page.time_signature.split('/')[1]) /
-                            int(i[3].split('/')[1])) for i in self.note_page.list_of_notes_bass])
-            self.note_page.update_size(instance, 1)
-        except Exception as e:
-            print(e)
-            return None
+        self.note_page.update_size(instance, 1)
 
     def adding_signature(self, instance, value):
-        pos_x, pos_y = -1000, -1000
-        if self.note_page.current_clef == 1 and len(self.note_page.list_of_notes_treble) > 0:
-            pos_x = self.note_page.list_of_notes_treble[-1][1]
-            pos_y = self.note_page.height / 10 * 9 - self.note_page.current_string_1 * (
-                    self.note_page.height / 6 + self.note_page.height // 100 * 8) - self.note_page.height // 200 * \
-                    self.note_page.list_of_notes_treble[-1][0]
-        elif self.note_page.current_clef == 2 and len(self.note_page.list_of_notes_bass) > 0:
-            pos_x = self.note_page.list_of_notes_bass[-1][1]
-            pos_y = self.note_page.height / 10 * 9 - self.note_page.current_string_2 * (
-                    self.note_page.height / 6 + self.note_page.height // 100 * 8) - self.note_page.height // 200 * \
-                    self.note_page.list_of_notes_bass[-1][
-                        0] - self.note_page.height / 12
+        if self.note_page.current_clef == 1:
+            pos_x = self.note_page.current_pos_1()
+            pos_y = self.note_page.height / 10 * 9 - (
+                        (self.note_page.x_pos_1 - int(self.note_page.time_signature.split('/')[1]) / int(
+                            self.note_page.current_duration.split('/')[1])) // (
+                                int(self.note_page.time_signature.split('/')[0]) * self.note_page.scale)) * (
+                            self.note_page.height / 12 + self.note_page.height // 100 * 8) - self.note_page.height // 25
+            self.note_page.database.update_sign(f'notepage_treble_{self.note_page.id_database}', value,
+                                                self.note_page.x_pos_1 - int(
+                                                    self.note_page.time_signature.split('/')[1]) / int(
+                                                    self.note_page.current_duration.split('/')[1]))
+        else:
+            pos_x = self.note_page.current_pos_2()
+            pos_y = (self.note_page.height / 10 * 9 - (
+                    (self.note_page.x_pos_2 - int(self.note_page.time_signature.split('/')[1]) / int(
+                        self.note_page.current_duration.split('/')[1])) // (
+                            int(self.note_page.time_signature.split('/')[0]) * self.note_page.scale)) * (
+                             self.note_page.height / 12 + self.note_page.height // 100 * 8)) - self.note_page.height // 25 - self.note_page.height // 12
+            self.note_page.database.update_sign(f'notepage_bass_{self.note_page.id_database}', value,
+                                                self.note_page.x_pos_2 - int(
+                                                    self.note_page.time_signature.split('/')[1]) / int(
+                                                    self.note_page.current_duration.split('/')[1]))
+        pos_x -= int(self.note_page.time_signature.split('/')[1]) / int(
+            self.note_page.current_duration.split('/')[1]) * self.note_page.each_note
         size_x = self.note_page.k_size_note * 3
         size_y = self.note_page.k_size_note * 6
         if value == -1:
@@ -359,24 +395,6 @@ class EditorBox(BoxLayout):
                 sign = Image(source='templates/sharp.png', allow_stretch=True, keep_ratio=False)
                 sign.pos = (pos_x - 1.5 * size_x, pos_y)
                 sign.size = (size_x, size_y)
-        if self.note_page.current_clef == 1 and len(self.note_page.list_of_notes_treble) > 0:
-            x = self.note_page.list_of_notes_treble[-1]
-            self.note_page.list_of_notes_treble[-1] = ([(x[i] if i != 4 else value) for i in range(len(x))])
-            self.note_page.database.delete(f'notepage_treble_{self.note_page.id_database}',
-                                           self.note_page.list_of_notes_treble[-1][0],
-                                           self.note_page.list_of_notes_treble[-1][1],
-                                           self.note_page.list_of_notes_treble[-1][2])
-            self.note_page.database.update(f'notepage_treble_{self.note_page.id_database}',
-                                           self.note_page.list_of_notes_treble[-1])
-        elif self.note_page.current_clef == 2 and len(self.note_page.list_of_notes_bass) > 0:
-            x = self.note_page.list_of_notes_bass[-1]
-            self.note_page.list_of_notes_bass[-1] = ([(x[i] if i != 4 else value) for i in range(len(x))])
-            self.note_page.database.delete(f'notepage_bass_{self.note_page.id_database}',
-                                           self.note_page.list_of_notes_bass[-1][0],
-                                           self.note_page.list_of_notes_bass[-1][1],
-                                           self.note_page.list_of_notes_bass[-1][2])
-            self.note_page.database.update(f'notepage_bass_{self.note_page.id_database}',
-                                           self.note_page.list_of_notes_treble[-1])
 
     def select_tonality(self, instance, value):
         self.note_page.tonality = value
@@ -393,23 +411,42 @@ class NotePage(Widget):
         # Подключение к бд
         self.database = DataBase()
         self.id_database = self.database.select_id_database()
+        self.title = self.database.select_title()
+        self.author = self.database.select_author(k=1)
 
         self.list_of_notes_treble = self.connecting_db(
             f'notepage_treble_{self.id_database}')  # Все ноты скрипичного ключа
         self.list_of_notes_bass = self.connecting_db(f'notepage_bass_{self.id_database}')  # Все ноты басового ключа
         self.time_signature = '4/4'  # Размер произведения
         self.tonality = 'C-dur'  # Тональность
-        self.current_string_1 = 0  # Текущая строка в Скр. ключе
-        self.current_string_2 = 0  # Текущая строка в Бас. ключе
         self.current_duration = '1/4'  # По умолчанию длительность
         self.each_note = self.width * 8 / 9 / 4 / int(self.time_signature.split('/')[0])  # На каждую мин долю
-        self.current_pos_1 = self.width / 9  # Текущая позиция Скр. ключ
-        self.current_pos_2 = self.width / 9  # Текущая позиция Бас.ключ
+        self.x_pos_1 = 0  # Текущая позиция Скр. ключ
+        self.x_pos_2 = 0  # Текущая позиция Бас.ключ
         self.y_pos = [self.height // 200 * i for i in range(-6, 19)]  # Позиция по вертикали (все возможные)
         self.current_clef = 1  # Текущий знак (для работы с клавиатурой)
         self.k_size_note = self.height // 150  # Коэфф размера ноты
 
+        self.scale = 4  # Количество тактов на строке
+        self.selected_note = -1
+
         self.bind(size=self.update_size, pos=self.update_size)
+
+        self.title_label = Label(
+            text=self.title,
+            font_size=30,
+            color=(0, 0, 0, 1),
+            width=self.width / 2,
+            halign='center',
+            valign='middle'
+        )
+
+        self.author_label = Label(
+            text=self.author,
+            color=(0, 0, 0, 1),
+            halign='center',
+            valign='middle'
+        )
 
     def update_size(self, instance, value):
         self.clear_widgets()
@@ -418,6 +455,11 @@ class NotePage(Widget):
             self.rect = Rectangle(size=self.size, pos=self.pos)
 
             self.filling_canvas()
+
+            self.title_label.pos = [self.width / 4, self.height * 0.93]
+            self.author_label.pos = [self.width / 4 * 3, self.height * 0.9]
+            self.add_widget(self.title_label)
+            self.add_widget(self.author_label)
 
             interval = self.height / 10
             for string in range(10):
@@ -435,13 +477,19 @@ class NotePage(Widget):
                     clef.width = self.width / 20
                 clef.pos = (0, self.height - interval - 4 * self.height // 100)
                 self.add_widget(clef)
-                if string == 0:
-                    time_signature_label_1 = Label(text=self.time_signature.split('/')[0], font_name="D:/PycharmProjects/10_class/ZenDotsKir.ttf",
+                if string < 2:
+                    time_signature_label_1 = Label(text=self.time_signature.split('/')[0],
+                                                   font_name="D:/PycharmProjects/10_class/ZenDotsKir.ttf",
                                                    color=(0, 0, 0, 1), font_size=self.height / 50,
-                                                   pos=(self.width / 45, self.height - interval - 4 * self.height // 100))
-                    time_signature_label_2 = Label(text=self.time_signature.split('/')[1], font_name="D:/PycharmProjects/10_class/ZenDotsKir.ttf",
+                                                   pos=(
+                                                       self.width / 45,
+                                                       self.height - interval - 4 * self.height // 100))
+                    time_signature_label_2 = Label(text=self.time_signature.split('/')[1],
+                                                   font_name="D:/PycharmProjects/10_class/ZenDotsKir.ttf",
                                                    color=(0, 0, 0, 1), font_size=self.height / 50,
-                                                   pos=(self.width / 45, self.height - interval - 7 * self.height // 100))
+                                                   pos=(
+                                                       self.width / 45,
+                                                       self.height - interval - 7 * self.height // 100))
 
                     self.add_widget(time_signature_label_1)
                     self.add_widget(time_signature_label_2)
@@ -451,98 +499,106 @@ class NotePage(Widget):
         with self.canvas:
             if touch.button == 'left':
                 if self.current_clef == 1:
-                    current_string = self.current_string_1
+                    x_pos = self.x_pos_1
                 else:
-                    current_string = self.current_string_2
-                interval = self.height / 10 * 9 - current_string * (self.height / 6 + self.height // 100 * 8)
+                    x_pos = self.x_pos_2
+                interval = self.height / 10 * 9 - (x_pos // (int(self.time_signature.split('/')[0]) * self.scale)) * (
+                        self.height / 6 + self.height // 100 * 8)
                 Color(rgba=(0, 0, 0, 1))
-                if ((self.height / 10 * 9 - self.current_string_1 * (
+                if ((self.height / 10 * 9 - (self.x_pos_1 // (int(self.time_signature.split('/')[0]) * self.scale)) * (
                         self.height / 12 + self.height // 100 * 8)) + self.height // 48 >= touch.pos[1] >= (
-                        (self.height / 10 * 9 - self.current_string_1 * (
-                                self.height / 12 + self.height // 100 * 8)) - (
+                        (self.height / 10 * 9 - (
+                                self.x_pos_1 // (int(self.time_signature.split('/')[0]) * self.scale)) * (
+                                 self.height / 12 + self.height // 100 * 8)) - (
                                 self.height / 48 + self.height // 100 * 4))):
-                    interval = self.height / 10 * 9 - self.current_string_1 * (
-                            self.height / 12 + self.height // 100 * 8)
+                    interval = self.height / 10 * 9 - (
+                        (self.x_pos_1 // (int(self.time_signature.split('/')[0]) * self.scale))) * (
+                                       self.height / 12 + self.height // 100 * 8)
                     index = [abs(touch.pos[1] - interval + j) for j in self.y_pos].index(
                         min([abs(touch.pos[1] - interval + i) for i in self.y_pos]))
                     y = [interval - j for j in self.y_pos][index]
 
                     if int(self.current_duration.split('/')[1]) < 4:
-                        Line(ellipse=(int(self.current_pos_1) - self.k_size_note, y - self.k_size_note // 2,
-                                      self.k_size_note * 2, self.k_size_note))
+                        Line(ellipse=(int(self.width / 9 + self.x_pos_1 % (self.scale * int(
+                            self.time_signature.split('/')[0])) * self.each_note) - self.k_size_note,
+                                      y - self.k_size_note // 2,
+                                      self.k_size_note * 2, self.k_size_note), width=1.5)
                     else:
-                        Ellipse(pos=(int(self.current_pos_1) - self.k_size_note, y - self.k_size_note // 2),
+                        Ellipse(pos=(int(self.current_pos_1()) - self.k_size_note, y - self.k_size_note // 2),
                                 size=(self.k_size_note * 2, self.k_size_note))
                     if int(self.current_duration.split('/')[1]) > 1:
                         Line(points=(
-                            int(self.current_pos_1) + self.k_size_note - 2 * (index < 11) * self.k_size_note,
+                            int(self.current_pos_1()) + self.k_size_note - 2 * (index < 11) * self.k_size_note,
                             y + self.k_size_note // 2 - (index < 11) * self.k_size_note,
-                            int(self.current_pos_1) + self.k_size_note - 2 * (index < 11) * self.k_size_note,
+                            int(self.current_pos_1()) + self.k_size_note - 2 * (index < 11) * self.k_size_note,
                             y + self.k_size_note * 4 - 8 * (index < 11) * self.k_size_note), width=1.5)
-                        self.changing_duration(index, y, self.current_pos_1, self.current_duration)
+                        self.changing_duration(index, y, self.current_pos_1(), self.current_duration)
                     # Дополнительные линии
-                    if index % 2 == 0 and (index < 6 or index > 14):
+                    if index % 2 == 0 and (index < 8 or index > 16):
                         Line(points=(
-                            int(self.current_pos_1) - self.k_size_note * 2, y,
-                            int(self.current_pos_1) + self.k_size_note * 2, y), width=1.5)
-                        if index < 4:
+                            int(self.current_pos_1()) - self.k_size_note * 2, y,
+                            int(self.current_pos_1()) + self.k_size_note * 2, y), width=1.5)
+                        if index < 6:
                             Line(points=(
-                                int(self.current_pos_1) - self.k_size_note * 2, interval - self.y_pos[index - 2],
-                                int(self.current_pos_1) + self.k_size_note * 2, interval - self.y_pos[index - 2]),
+                                int(self.current_pos_1()) - self.k_size_note * 2, interval - self.y_pos[index - 2],
+                                int(self.current_pos_1()) + self.k_size_note * 2, interval - self.y_pos[index - 2]),
                                 width=1.5)
-                            if index == 0:
+                            if index == 2:
                                 Line(points=(
-                                    int(self.current_pos_1) - self.k_size_note * 2,
+                                    int(self.current_pos_1()) - self.k_size_note * 2,
                                     interval - self.y_pos[index - 3],
-                                    int(self.current_pos_1) + self.k_size_note * 2,
+                                    int(self.current_pos_1()) + self.k_size_note * 2,
                                     interval - self.y_pos[index - 3]), width=1.5)
-                        if index > 14:
+                        if index > 18:
                             Line(points=(
-                                int(self.current_pos_1) - self.k_size_note * 2, interval - self.y_pos[index - 2],
-                                int(self.current_pos_1) + self.k_size_note * 2, interval - self.y_pos[index - 2]),
+                                int(self.current_pos_1()) - self.k_size_note * 2, interval - self.y_pos[index - 2],
+                                int(self.current_pos_1()) + self.k_size_note * 2, interval - self.y_pos[index - 2]),
                                 width=1.5)
-                            if index == 18:
+                            if index == 20:
                                 Line(points=(
-                                    int(self.current_pos_1) - self.k_size_note * 2,
+                                    int(self.current_pos_1()) - self.k_size_note * 2,
                                     interval - self.y_pos[index - 3],
-                                    int(self.current_pos_1) + self.k_size_note * 2,
+                                    int(self.current_pos_1()) + self.k_size_note * 2,
                                     interval - self.y_pos[index - 3]), width=1.5)
 
-                    elif index == 17:
+                    elif index == 21:
                         Line(points=(
-                            int(self.current_pos_1) - self.k_size_note * 2, interval - self.y_pos[index - 1],
-                            int(self.current_pos_1) + self.k_size_note * 2, interval - self.y_pos[index - 1]),
+                            int(self.current_pos_1()) - self.k_size_note * 2, interval + self.y_pos[index - 1],
+                            int(self.current_pos_1()) + self.k_size_note * 2, interval + self.y_pos[index - 1]),
                             width=1.5)
-                    elif index == 1 or index == 3:
+                    elif index == 3 or index == 5:
                         Line(points=(
-                            int(self.current_pos_1) - self.k_size_note * 2, interval - self.y_pos[index + 1],
-                            int(self.current_pos_1) + self.k_size_note * 2, interval - self.y_pos[index + 1]),
+                            int(self.current_pos_1()) - self.k_size_note * 2, interval - self.y_pos[index + 1],
+                            int(self.current_pos_1()) + self.k_size_note * 2, interval - self.y_pos[index + 1]),
                             width=1.5)
-                        if index == 1:
+                        if index == 3:
                             Line(points=(
-                                int(self.current_pos_1) - self.k_size_note * 2, interval - self.y_pos[index + 3],
-                                int(self.current_pos_1) + self.k_size_note * 2, interval - self.y_pos[index + 3]),
+                                int(self.current_pos_1()) - self.k_size_note * 2, interval - self.y_pos[index + 3],
+                                int(self.current_pos_1()) + self.k_size_note * 2, interval - self.y_pos[index + 3]),
                                 width=1.5)
 
                     self.list_of_notes_treble.append(
-                        (index, self.current_pos_1, self.current_string_1, self.current_duration, 0, float(self.width)))
+                        (index, self.x_pos_1, self.current_duration, 0))
                     self.database.update(f'notepage_treble_{self.id_database}',
                                          (
-                                             index, self.current_pos_1, self.current_string_1,
-                                             self.current_duration, 0,
-                                             float(self.width)))
+                                             index, self.x_pos_1,
+                                             self.current_duration, 0))
                     print(self.time_signature)
-                    self.current_pos_1 += self.each_note * (int(self.time_signature.split('/')[1]) /
-                                                            int(self.current_duration.split('/')[1]))
+                    self.x_pos_1 += int(self.time_signature.split('/')[1]) / int(
+                        self.current_duration.split('/')[1])
                     self.current_clef = 1
                 elif (
-                        ((self.height / 10 * 9 - self.current_string_2 * (
-                                self.height / 12 + self.height // 100 * 8)) - (
+                        ((self.height / 10 * 9 - (
+                                self.x_pos_2 // (int(self.time_signature.split('/')[0]) * self.scale)) * (
+                                  self.height / 12 + self.height // 100 * 8)) - (
                                  self.height / 48 + self.height // 100 * 4))) >= touch.pos[1] >= (
-                        self.height / 10 * 9 - self.current_string_2 * (self.height / 12 + self.height // 100 * 8)) - (
+                        self.height / 10 * 9 - (
+                        self.x_pos_2 // (int(self.time_signature.split('/')[0]) * self.scale)) * (
+                                self.height / 12 + self.height // 100 * 8)) - (
                         self.height / 24 + self.height // 100 * 11):
-                    interval = (self.height / 10 * 9 - self.current_string_2 * (
-                            self.height / 12 + self.height // 100 * 8))
+                    interval = (self.height / 10 * 9 - (
+                            self.x_pos_2 // (int(self.time_signature.split('/')[0]) * self.scale)) * (
+                                        self.height / 12 + self.height // 100 * 8))
                     index = [abs(touch.pos[1] - interval + (self.height / 24 + self.height // 100 * 4) + j) for j in
                              self.y_pos].index(
                         min([abs(touch.pos[1] - interval + (self.height / 24 + self.height // 100 * 4) + i) for i in
@@ -550,141 +606,124 @@ class NotePage(Widget):
                     y = [interval - (self.height / 24 + self.height // 100 * 4) - j for j in self.y_pos][index]
 
                     if int(self.current_duration.split('/')[1]) < 4:
-                        Line(ellipse=(int(self.current_pos_2) - self.k_size_note, y - self.k_size_note // 2,
-                                      self.k_size_note * 2, self.k_size_note))
+                        Line(ellipse=(int(self.current_pos_2()) - self.k_size_note, y - self.k_size_note // 2,
+                                      self.k_size_note * 2, self.k_size_note), width=1.5)
                     else:
-                        Ellipse(pos=(int(self.current_pos_2) - self.k_size_note, y - self.k_size_note // 2),
+                        Ellipse(pos=(int(self.width / 9 + self.x_pos_2 % (self.scale * int(
+                            self.time_signature.split('/')[0])) * self.each_note) - self.k_size_note,
+                                     y - self.k_size_note // 2),
                                 size=(self.k_size_note * 2, self.k_size_note))
                     if int(self.current_duration.split('/')[1]) > 1:
                         Line(points=(
-                            int(self.current_pos_2) + self.k_size_note - 2 * (index < 11) * self.k_size_note,
+                            int(self.current_pos_2()) + self.k_size_note - 2 * (index < 11) * self.k_size_note,
                             y + self.k_size_note // 2 - (index < 11) * self.k_size_note,
-                            int(self.current_pos_2) + self.k_size_note - 2 * (index < 11) * self.k_size_note,
+                            int(self.current_pos_2()) + self.k_size_note - 2 * (index < 11) * self.k_size_note,
                             y + self.k_size_note * 4 - 8 * (index < 11) * self.k_size_note), width=1.5)
-                    self.changing_duration(index, y, self.current_pos_2, self.current_duration)
-                    if index % 2 == 0 and (index < 6 or index > 16):
+                    self.changing_duration(index, y, self.current_pos_2(), self.current_duration)
+                    if index % 2 == 0 and (index < 8 or index > 18):
                         Line(points=(
-                            int(self.current_pos_2) - self.k_size_note * 2, y,
-                            int(self.current_pos_2) + self.k_size_note * 2, y), width=1.5)
+                            int(self.current_pos_2()) - self.k_size_note * 2, y,
+                            int(self.current_pos_2()) + self.k_size_note * 2, y), width=1.5)
 
-                        if index < 4:
+                        if index < 6:
                             Line(points=(
-                                int(self.current_pos_2) - self.k_size_note * 2,
+                                int(self.current_pos_2()) - self.k_size_note * 2,
                                 interval - self.height // 12 - self.y_pos[index - 2],
-                                int(self.current_pos_2) + self.k_size_note * 2,
+                                int(self.current_pos_2()) + self.k_size_note * 2,
                                 interval - self.height // 12 - self.y_pos[index - 2]),
                                 width=1.5)
-                            if index == 0:
+                            if index == 2:
                                 Line(points=(
-                                    int(self.current_pos_2) - self.k_size_note * 2,
+                                    int(self.current_pos_2()) - self.k_size_note * 2,
                                     interval - self.height // 12 - self.y_pos[index - 3],
-                                    int(self.current_pos_2) + self.k_size_note * 2,
+                                    int(self.current_pos_2()) + self.k_size_note * 2,
                                     interval - self.height // 12 - self.y_pos[index - 3]), width=1.5)
-                        if index > 14:
+                        if index > 16:
                             Line(points=(
-                                int(self.current_pos_2) - self.k_size_note * 2,
+                                int(self.current_pos_2()) - self.k_size_note * 2,
                                 interval - self.height // 12 - self.y_pos[index - 2],
-                                int(self.current_pos_2) + self.k_size_note * 2,
+                                int(self.current_pos_2()) + self.k_size_note * 2,
                                 interval - self.height // 12 - self.y_pos[index - 2]),
                                 width=1.5)
-                            if index == 18:
+                            if index == 20:
                                 Line(points=(
-                                    int(self.current_pos_2) - self.k_size_note * 2,
+                                    int(self.current_pos_2()) - self.k_size_note * 2,
                                     interval - self.height // 12 - self.y_pos[index - 3],
-                                    int(self.current_pos_2) + self.k_size_note * 2,
+                                    int(self.current_pos_2()) + self.k_size_note * 2,
                                     interval - self.height // 12 - self.y_pos[index - 3]), width=1.5)
 
-                    elif index == 17:
+                    elif index == 19:
                         Line(points=(
-                            int(self.current_pos_2) - self.k_size_note * 2,
+                            int(self.current_pos_2()) - self.k_size_note * 2,
                             interval - self.height // 12 - self.y_pos[index - 1],
-                            int(self.current_pos_2) + self.k_size_note * 2,
+                            int(self.current_pos_2()) + self.k_size_note * 2,
                             interval - self.height // 12 - self.y_pos[index - 1]),
                             width=1.5)
-                    elif index == 1 or index == 3:
+                    elif index == 3 or index == 5:
                         Line(points=(
-                            int(self.current_pos_2) - self.k_size_note * 2,
+                            int(self.current_pos_2()) - self.k_size_note * 2,
                             interval - self.height // 12 - self.y_pos[index - 1],
-                            int(self.current_pos_2) + self.k_size_note * 2,
+                            int(self.current_pos_2()) + self.k_size_note * 2,
                             interval - self.height // 12 - self.y_pos[index - 1]),
                             width=1.5)
-                        if index == 1:
+                        if index == 3:
                             Line(points=(
-                                int(self.current_pos_2) - self.k_size_note * 2,
+                                int(self.current_pos_2()) - self.k_size_note * 2,
                                 interval - self.height // 12 - self.y_pos[index - 3],
-                                int(self.current_pos_2) + self.k_size_note * 2,
+                                int(self.current_pos_2()) + self.k_size_note * 2,
                                 interval - self.height // 12 - self.y_pos[index - 3]),
                                 width=1.5)
 
                     self.list_of_notes_bass.append(
-                        (index, self.current_pos_2, self.current_string_2, self.current_duration, 0, self.width))
+                        (index, self.x_pos_2, self.current_duration, 0))
                     self.database.update(f'notepage_bass_{self.id_database}', (
-                        index, self.current_pos_2, self.current_string_2, self.current_duration, 0,
-                        float(self.width)))
+                        index, self.x_pos_2, self.current_duration, 0
+                    ))
 
-                    self.current_pos_2 += self.each_note * (int(self.time_signature.split('/')[1]) /
-                                                            int(self.current_duration.split('/')[1]))
+                    self.x_pos_2 += int(self.time_signature.split('/')[1]) / int(
+                        self.current_duration.split('/')[1])
                     self.current_clef = 2
             self.make_beat()
 
     # Такты
     def make_beat(self):
-        count_strings = int(
-            max(sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in self.list_of_notes_treble]),
-                sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in
-                     self.list_of_notes_bass])) / int(
-                self.time_signature.split('/')[0]) * int(self.time_signature.split('/')[1])) // 4
+        count_strings = int(max(self.x_pos_1, self.x_pos_2) // (self.scale * int(self.time_signature.split('/')[0])))
         for num_string in range(count_strings + 1):
             if num_string == count_strings:
-                count_beats = int(
-                    max(sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in self.list_of_notes_treble]),
-                        sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in
-                             self.list_of_notes_bass])) / int(
-                        self.time_signature.split('/')[0]) * int(self.time_signature.split('/')[1])) % 4
+                count_beats = int((max(self.x_pos_1, self.x_pos_2) % (
+                        self.scale * int(self.time_signature.split('/')[0]))) // self.scale)
             else:
-                count_beats = 4
+                count_beats = self.scale
             for i in range(count_beats):
                 with self.canvas:
                     Color(0, 0, 0, 1)
                     Line(points=(self.width / 9 * 8 / 4 * (i + 1) + self.width / 9 - self.each_note / 3,
-                                 self.height / 10 * 9 - num_string * (self.height / 12 + self.height / 100 * 8),
+                                 self.height / 10 * 9 - num_string * (self.height / 6),
                                  self.width / 9 * 8 / 4 * (i + 1) + self.width / 9 - self.each_note / 3,
                                  self.height / 10 * 9 - num_string * (
-                                         self.height / 12 + self.height / 100 * 8) - self.height / 100 * 4), width=1.5)
+                                         self.height / 6) - self.height / 100 * 4), width=1.5)
                     Line(points=(self.width / 9 * 8 / 4 * (i + 1) + self.width / 9 - self.each_note / 3,
                                  self.height / 10 * 9 - num_string * (
-                                         self.height / 12 + self.height / 100 * 8) - (
-                                         self.height / 24 + self.height / 100 * 4),
+                                         self.height / 6) - (
+                                         self.height / 12),
                                  self.width / 9 * 8 / 4 * (i + 1) + self.width / 9 - self.each_note / 3,
                                  self.height / 10 * 9 - num_string * (
-                                         self.height / 12 + self.height / 100 * 8) - (
-                                         self.height / 24 + self.height / 100 * 8)), width=1.5)
-        if self.current_string_1 < int(
-                sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in self.list_of_notes_treble]) / int(
-                    self.time_signature.split('/')[0]) * int(self.time_signature.split('/')[1])) // 4:
-            self.current_pos_1 = self.width / 9
-        if self.current_string_2 < int(
-                sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in self.list_of_notes_bass]) / int(
-                    self.time_signature.split('/')[0]) * int(self.time_signature.split('/')[1])) // 4:
-            self.current_pos_2 = self.width / 9
-        self.current_string_1 = int(
-            sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in self.list_of_notes_treble]) / int(
-                self.time_signature.split('/')[0]) * int(self.time_signature.split('/')[1])) // 4
-        self.current_string_2 = int(
-            sum([int(x[3].split('/')[0]) / int(x[3].split('/')[1]) for x in self.list_of_notes_bass]) / int(
-                self.time_signature.split('/')[0]) * int(self.time_signature.split('/')[1])) // 4
+                                         self.height / 6) - (
+                                         self.height / 12 + self.height / 100 * 4)), width=1.5)
 
     def changing_pause(self, duration, image, clef):
         if clef == 1:
-            current_string = self.current_string_1
+            x_pos = self.x_pos_1
         else:
-            current_string = self.current_string_2
-        y = self.height / 10 * 9 - current_string * (
+            x_pos = self.x_pos_2
+        y = self.height / 10 * 9 - (x_pos // (int(self.time_signature.split('/')[0]) * self.scale)) * (
                 self.height // 12 + self.height // 100 * 8) - self.height // 100 * 5.5
         if clef == 1:
             with self.canvas:
                 pause = Image(source=image, allow_stretch=False, keep_ratio=True)
-                pause.pos = (self.current_pos_1 - self.each_note / 2, y)
+                pause.pos = ((self.width / 9 + self.x_pos_1 % (
+                        self.scale * int(self.time_signature.split('/')[0])) * self.each_note) - self.each_note / 2,
+                             y)
                 self.add_widget(pause)
 
 
@@ -692,7 +731,9 @@ class NotePage(Widget):
             with self.canvas:
                 pause = Image(source=image, allow_stretch=False, keep_ratio=True)
                 pause.pos = (
-                    self.current_pos_2 - self.each_note / 2, y - self.height / 12)
+                    (self.width / 9 + self.x_pos_2 % (self.scale * int(
+                        self.time_signature.split('/')[0])) * self.each_note) - self.each_note / 2,
+                    y - self.height / 12)
                 self.add_widget(pause)
 
         self.make_beat()
@@ -718,47 +759,51 @@ class NotePage(Widget):
         return list(self.database.select(name_db))
 
     def filling_canvas(self):
-        self.current_pos_1, self.current_pos_2 = self.width / 9, self.width / 9
+        self.x_pos_1, self.x_pos_2 = 0, 0
         for i in self.list_of_notes_treble:
-            if i[4] == 3:
-                if i[3] == '1/1':
-                    self.changing_pause(i[3], 'templates/whole_pause.png', 1)
-                elif i[3] == '1/2':
-                    self.changing_pause(i[3], 'templates/half_pause.png', 1)
-                elif i[3] == '1/4':
-                    self.changing_pause(i[3], 'templates/quarter_pause.png', 1)
-                elif i[3] == '1/8':
-                    self.changing_pause(i[3], 'templates/eighth_pause.png', 1)
-                elif i[3] == '1/16':
-                    self.changing_pause(i[3], 'templates/sixteenth_pause.png', 1)
-                elif i[3] == '1/32':
-                    self.changing_pause(i[3], 'templates/thirty_second_pause.png', 1)
-                self.current_pos_1 += self.each_note * (
-                        int(self.time_signature.split('/')[1]) /
-                        int(i[3].split('/')[1]))
+            if i[3] == 3:
+                if i[2] == '1/1':
+                    self.changing_pause(i[2], 'templates/whole_pause.png', 1)
+                elif i[2] == '1/2':
+                    self.changing_pause(i[2], 'templates/half_pause.png', 1)
+                elif i[2] == '1/4':
+                    self.changing_pause(i[2], 'templates/quarter_pause.png', 1)
+                elif i[2] == '1/8':
+                    self.changing_pause(i[2], 'templates/eighth_pause.png', 1)
+                elif i[2] == '1/16':
+                    self.changing_pause(i[2], 'templates/sixteenth_pause.png', 1)
+                elif i[2] == '1/32':
+                    self.changing_pause(i[2], 'templates/thirty_second_pause.png', 1)
+                self.x_pos_1 += int(self.time_signature.split('/')[1]) / int(
+                    self.current_duration.split('/')[1])
                 continue
-            self.draw_note_filling_canvas(self.height / 10 * 9 - i[2] * (
-                    self.height / 12 + self.height // 100 * 8), i[0], i[1] / i[5] * self.width, i[3], i[4], 1)
+            self.draw_note_filling_canvas(
+                self.height / 10 * 9 - (i[1] // (int(self.time_signature.split('/')[0]) * self.scale)) * (
+                        self.height / 6), i[0],
+                self.width / 9 + i[1] % (self.scale * int(self.time_signature.split('/')[0])) * self.each_note, i[2],
+                i[3], 1)
         for i in self.list_of_notes_bass:
-            if i[4] == 3:
-                if i[3] == '1/1':
-                    self.changing_pause(i[3], 'templates/whole_pause.png', 2)
-                elif i[3] == '1/2':
-                    self.changing_pause(i[3], 'templates/half_pause.png', 2)
-                elif i[3] == '1/4':
-                    self.changing_pause(i[3], 'templates/quarter_pause.png', 2)
-                elif i[3] == '1/8':
-                    self.changing_pause(i[3], 'templates/eighth_pause.png', 2)
-                elif i[3] == '1/16':
-                    self.changing_pause(i[3], 'templates/sixteenth_pause.png', 2)
-                elif i[3] == '1/32':
-                    self.changing_pause(i[3], 'templates/thirty_second_pause.png', 2)
-                self.current_pos_2 += self.each_note * (
-                        int(self.time_signature.split('/')[1]) /
-                        int(i[3].split('/')[1]))
+            if i[3] == 3:
+                if i[2] == '1/1':
+                    self.changing_pause(i[2], 'templates/whole_pause.png', 2)
+                elif i[2] == '1/2':
+                    self.changing_pause(i[2], 'templates/half_pause.png', 2)
+                elif i[2] == '1/4':
+                    self.changing_pause(i[2], 'templates/quarter_pause.png', 2)
+                elif i[2] == '1/8':
+                    self.changing_pause(i[2], 'templates/eighth_pause.png', 2)
+                elif i[2] == '1/16':
+                    self.changing_pause(i[2], 'templates/sixteenth_pause.png', 2)
+                elif i[2] == '1/32':
+                    self.changing_pause(i[2], 'templates/thirty_second_pause.png', 2)
+                self.x_pos_2 += int(self.time_signature.split('/')[1]) / int(
+                    self.current_duration.split('/')[1])
                 continue
-            self.draw_note_filling_canvas(self.height / 10 * 9 - i[2] * (
-                    self.height / 12 + self.height // 100 * 8), i[0], i[1], i[3], i[4], 2)
+            self.draw_note_filling_canvas(
+                self.height / 10 * 9 - (i[1] // (int(self.time_signature.split('/')[0]) * self.scale)) * (
+                        self.height / 6), i[0],
+                self.width / 9 + i[1] % (self.scale * int(self.time_signature.split('/')[0])) * self.each_note, i[2],
+                i[3], 2)
 
     def draw_note_filling_canvas(self, y, ind, pos, duration, sign, clef):
         y -= (ind - 6) * self.height // 200
@@ -767,7 +812,7 @@ class NotePage(Widget):
                 Color(0, 0, 0, 1)
                 if int(duration.split('/')[1]) < 4:
                     Line(ellipse=(int(pos) - self.k_size_note, y - self.k_size_note // 2,
-                                  self.k_size_note * 2, self.k_size_note))
+                                  self.k_size_note * 2, self.k_size_note), width=1.5)
                 else:
                     Ellipse(pos=(
                         int(pos) - self.k_size_note,
@@ -785,19 +830,17 @@ class NotePage(Widget):
                         int(pos) - self.k_size_note * 2, y,
                         int(pos) + self.k_size_note * 2, y), width=1.5)
 
-                self.adding_signature(sign, self.current_pos_1, y)
+                self.adding_signature(sign, self.current_pos_1(), y)
 
-                self.current_pos_1 += self.each_note * (
-                        int(self.time_signature.split('/')[1]) /
-                        int(duration.split('/')[
-                                1]))
+                self.x_pos_1 += int(self.time_signature.split('/')[1]) / int(
+                    self.current_duration.split('/')[1])
         else:
             with self.canvas:
                 Color(0, 0, 0, 1)
                 if int(duration.split('/')[1]) < 4:
                     Line(ellipse=(int(pos) - self.k_size_note,
                                   y - self.height / 12 - self.k_size_note // 2,
-                                  self.k_size_note * 2, self.k_size_note))
+                                  self.k_size_note * 2, self.k_size_note), width=1.5)
                 else:
                     Ellipse(pos=(int(pos) - self.k_size_note,
                                  y - self.height / 12 - self.k_size_note // 2),
@@ -816,12 +859,10 @@ class NotePage(Widget):
                         pos + self.k_size_note * 2,
                         y - self.height / 12), width=1.5)
 
-                self.adding_signature(sign, self.current_pos_2, y - self.height / 12)
+                self.adding_signature(sign, self.current_pos_2(), y - self.height / 12)
 
-                self.current_pos_2 += self.each_note * (
-                        int(self.time_signature.split('/')[1]) /
-                        int(duration.split('/')[
-                                1]))
+                self.x_pos_2 += int(self.time_signature.split('/')[1]) / int(
+                    self.current_duration.split('/')[1])
         self.make_beat()
 
     def adding_signature(self, value, pos_x, pos_y):
@@ -830,13 +871,21 @@ class NotePage(Widget):
         if value == -1:
             with self.canvas:
                 sign = Image(source='templates/flat.png', allow_stretch=True, keep_ratio=False)
-                sign.pos = (pos_x - 1.5 * size_x, pos_y)
+                sign.pos = (pos_x - 1.5 * size_x, pos_y - size_y // 2)
                 sign.size = (size_x, size_y)
+                self.add_widget(sign)
         elif value == 1:
             with self.canvas:
                 sign = Image(source='templates/sharp.png', allow_stretch=True, keep_ratio=False)
-                sign.pos = (pos_x - 1.5 * size_x, pos_y)
+                sign.pos = (pos_x - 1.5 * size_x, pos_y - size_y // 2)
                 sign.size = (size_x, size_y)
+                self.add_widget(sign)
+
+    def current_pos_1(self):
+        return (self.width / 9 + self.x_pos_1 % (self.scale * int(self.time_signature.split('/')[0])) * self.each_note)
+
+    def current_pos_2(self):
+        return (self.width / 9 + self.x_pos_2 % (self.scale * int(self.time_signature.split('/')[0])) * self.each_note)
 
 
 class ImagePaste(Widget):
@@ -928,4 +977,9 @@ class InstrumentsBox(StackLayout):
 5. Выбор паузы
 6. Добавление диеза или бемоля
  self.list_of_notes_bass.append((index, self.current_pos, self.current_duration, signature))
+ 
+ 
+x_pos
+ 1. Прибавление доли
+ 2. x = Отступ + self.(x_pos % масштаб) * self.each_note
 '''

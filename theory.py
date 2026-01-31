@@ -10,8 +10,7 @@ from kivy.uix.stacklayout import StackLayout
 class TheoryScreen(Screen):
     def __init__(self):
         super().__init__()
-        self.theory_box = InstrumentsBox()
-        self.add_widget(self.theory_box)
+
 
 
 class TheoryScrollView(ScrollView):

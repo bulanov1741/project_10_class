@@ -21,6 +21,7 @@ class Const():
         self.okt_7 = '2093	2217	2349	2489	2637	2794	2960	3136	3322	3520	3729	3951'.split()
         self.okt_8 = '4186	4435	4699	4978	5274	5588	5920	6272	6645	7040	7459	7902'.split()
 
+        self.okt_0 = [float(i) for i in self.okt_0]
         self.okt_1 = [float(i) for i in self.okt_1]
         self.okt_2 = [float(i) for i in self.okt_2]
         self.okt_3 = [float(i) for i in self.okt_3]
@@ -29,6 +30,10 @@ class Const():
         self.okt_6 = [float(i) for i in self.okt_6]
         self.okt_7 = [float(i) for i in self.okt_7]
         self.okt_8 = [float(i) for i in self.okt_8]
+        self.all_freq = self.okt_0 + self.okt_1 + self.okt_2 + self.okt_3 + self.okt_4 + self.okt_5 + self.okt_6 + self.okt_7 + self.okt_8
+        self.notes_freq_index = [
+            [self.okt_0[i], self.okt_1[i], self.okt_2[i], self.okt_3[i], self.okt_4[i],
+             self.okt_5[i], self.okt_6[i], self.okt_7[i], self.okt_8[i]] for i in range(12)]
 
         self.all_tonalties = ['C-dur', 'G-dur', 'D-dur', 'A-dur', 'E-dur', 'H-dur', 'Fis-dur', 'Cis-dur', 'Gis-dur',
                               'Dis-dur', 'Ais-dur', 'Es-dur', 'B-dur', 'F-dur', 'Des-dur', 'As-dur', 'Es-dur', 'B-dur',
@@ -48,13 +53,12 @@ class Const():
         #     print(f'''{"el" * (i != 0)}if abs(freq - {okt_3[i]}) < 5:
         #     print("{notes[i]}")''')
 
-
-with open('olimpiada.csv', "r") as file:
-    file.readline()
-    file.readline()
-    answer = []
-    for i in file.readlines():
-        i = i.replace(' ', '')
-        line = i.strip().split('|')
-        answer.append((line[1], int(line[2]), int(line[3])))
-print(answer)
+# with open('olimpiada.csv', "r") as file:
+#     file.readline()
+#     file.readline()
+#     answer = []
+#     for i in file.readlines():
+#         i = i.replace(' ', '')
+#         line = i.strip().split('|')
+#         answer.append((line[1], int(line[2]), int(line[3])))
+# print(answer)

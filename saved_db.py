@@ -1,5 +1,8 @@
+import smtplib
 import sqlite3
 from datetime import time, datetime
+from email.message import EmailMessage
+from email.mime.multipart import MIMEMultipart
 from functools import partial
 
 from kivy.uix.boxlayout import BoxLayout
@@ -7,6 +10,7 @@ from kivy.uix.button import Button
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
+from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.spinner import Spinner
@@ -14,6 +18,7 @@ from kivy.uix.stacklayout import StackLayout
 from kivy.uix.textinput import TextInput
 
 from const import Const
+from sqlite import DataBase
 
 
 class SavedDatabaseScreen(Screen):
@@ -27,7 +32,7 @@ class SavedDatabaseLayout(FloatLayout):
         super().__init__()
         self.add_note_page = Button(text='Добавить', pos_hint={'x': 0, 'top': 1}, size_hint=(0.25, 0.1))
         self.add_note_page.bind(on_press=self.adding_note_page)
-        self.spinner = Spinner(values=["По порядку", "По названию", "По дате изменения"], text="Сортировка")
+        self.spinner = Spinner(values=["По порядку", "По названию", "По автору"], text="Сортировка")
         self.spinner.size_hint = (0.75, 0.1)
         self.spinner.pos_hint = {'x': 0.25, 'top': 1}
         self.spinner.bind(text=self.on_spinner_select)
@@ -66,15 +71,19 @@ class SavedDatabaseView(ScrollView):
                                   CREATE TABLE IF NOT EXISTS saved_database (
                                       id INTEGER PRIMARY KEY,
                                       name TEXT,
+                                      author TEXT,
                                       time_created TEXT,
-                                      time_changed TEXT,
                                       now_open INTEGER
                                   )
                         ''')
+
+        self.database = DataBase()
+        self.author = self.database.select_author()
+
         if list(self.cur.execute(f'SELECT COUNT(*) FROM saved_database').fetchall()) == [(0,)]:
             self.cur.execute(
-                f"INSERT INTO saved_database (id, name, time_created, time_changed, now_open) VALUES (?, ?, ?, ?, ?)",
-                [1, "Новый лист", datetime.now().strftime("%H:%M:%S|%d.%m.%Y"), datetime.now().strftime("%H:%M:%S|%d.%m.%Y"), 1])
+                f"INSERT INTO saved_database (id, name, author, time_created, now_open) VALUES (?, ?, ?, ?, ?)",
+                [1, "Новый лист", self.author, datetime.now().strftime("%H:%M:%S|%d.%m.%Y"), 1])
         self.con.commit()
         self.saved_db_list = list(self.cur.execute(f"SELECT * FROM saved_database").fetchall())
 
@@ -85,22 +94,23 @@ class SavedDatabaseView(ScrollView):
             text=i[1],
             halign='center'
             )
-            time_created = Label(
+            author = Label(
             text=i[2]
             )
-            time_changed = Label(
+            time_created = Label(
             text=i[3]
             )
             save = Button(text="Сохранить")
             delete = Button(text="Удалить")
             choose = Button(text="Выбрать")
             self.layout.add_widget(name_database)
+            self.layout.add_widget(author)
             self.layout.add_widget(time_created)
-            self.layout.add_widget(time_changed)
             self.layout.add_widget(save)
             self.layout.add_widget(delete)
             self.layout.add_widget(choose)
 
+            name_database.bind(on_text_validate=partial(self.saving_new_title, id_database=i[0], name=name_database))
             save.bind(on_press=partial(self.saving_new_title, id_database=i[0], name=name_database))
             delete.bind(on_press=partial(self.deleting_sheet_music, id_database=i[0]))
             choose.bind(on_press=partial(self.changing_sheet_music, id_database=i[0]))
@@ -136,11 +146,12 @@ class SavedDatabaseView(ScrollView):
 
 
     def adding_note_page(self):
+        name_id = len([i[0] for i in list(self.cur.execute('SELECT ID FROM saved_database WHERE name LIKE "Новый лист%"').fetchall())])
         max_id = max([i[0] for i in list(self.cur.execute('SELECT ID FROM saved_database').fetchall())])
         self.cur.execute(
-            f"INSERT INTO saved_database (id, name, time_created, time_changed, now_open) VALUES (?, ?, ?, ?, ?)",
-            [max_id + 1, f"Новый лист({max_id})",
-             datetime.now().strftime("%H:%M:%S|%d.%m.%Y"),
+            f"INSERT INTO saved_database (id, name, author, time_created, now_open) VALUES (?, ?, ?, ?, ?)",
+            [max_id + 1, f"Новый лист({name_id})",
+             self.author,
              datetime.now().strftime("%H:%M:%S|%d.%m.%Y"), 0])
         self.con.commit()
         self.saved_db_list = list(self.cur.execute(f"SELECT * FROM saved_database").fetchall())
@@ -154,23 +165,30 @@ class SavedDatabaseView(ScrollView):
                 text=i[1],
                 halign='center'
             )
-            time_created = Label(
+            author = Label(
                 text=i[2]
             )
-            time_changed = Label(
+            time_created = Label(
                 text=i[3]
             )
             save = Button(text="Сохранить")
             delete = Button(text="Удалить")
             choose = Button(text="Выбрать")
             self.layout.add_widget(name_database)
+            self.layout.add_widget(author)
             self.layout.add_widget(time_created)
-            self.layout.add_widget(time_changed)
             self.layout.add_widget(save)
             self.layout.add_widget(delete)
             self.layout.add_widget(choose)
 
+            name_database.bind(on_text_validate=partial(self.saving_new_title, id_database=i[0], name=name_database.text))
             save.bind(on_press=partial(self.saving_new_title, id_database=i[0], name=name_database.text))
             delete.bind(on_press=partial(self.deleting_sheet_music, id_database=i[0]))
             choose.bind(on_press=partial(self.changing_sheet_music, id_database=i[0]))
+
+
+    def show_notification(self, text):
+        popup = Popup(title='Уведомление', content=Label(text=text), size_hint=(None, None), size=(400, 400))
+        popup.open()
+
 

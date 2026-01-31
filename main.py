@@ -73,12 +73,14 @@ class MainBox(BoxLayout):
         self.screen_manager.switch_to(self.theory_screen)
 
     def changing_screens_on_editor(self, instance):
+        self.editor_screen = EditorScreen()
         self.screen_manager.switch_to(self.editor_screen)
 
     def changing_screens_on_recognize(self, instance):
         self.screen_manager.switch_to(self.recognize_screen)
 
     def changing_screens_on_saved_db(self, instance):
+        self.saved_db_screen = SavedDatabaseScreen()
         self.screen_manager.switch_to(self.saved_db_screen)
 
     def changing_screens_on_profile(self, instance):
