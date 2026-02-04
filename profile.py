@@ -45,7 +45,7 @@ class ProfileBox(GridLayout):
         database = DataBase()
         self.email = database.select_email()
         self.first_name = database.select_first_name()
-        self.name = database.select_first_name()
+        self.name = database.select_name()
         # Почта
         self.name_label = Label(
             text="Почта",
@@ -86,12 +86,13 @@ class ProfileBox(GridLayout):
         self.button_cancel.bind(on_press=self.cancel)
 
     def save(self, instance):
+        changing = (self.email == self.email_input)
         self.cur.execute(f"INSERT INTO profile (email, first_name, name) VALUES (?, ?, ?)",
                          (self.email_input.text, self.first_name_input.text, self.name_input.text))
         self.con.commit()
         self.email, self.first_name, self.name = self.email_input.text, self.first_name_input.text, self.name_input.text
 
-        if self.email_input.text != '':
+        if self.email_input.text != '' and (not changing):
             recipient = self.email_input.text
             topic = 'Смена почты'
             sender = 'notebasic@yandex.ru'

@@ -54,7 +54,7 @@ class EditorBox(BoxLayout):
         self.keyboard = ImagePaste('templates/img.png', self.width, self.height, (self.width, self.height / 5), (0, 0))
         self.add_widget(self.keyboard)
 
-        self.draw_mode = False
+        Window.bind(on_key_down=self.on_keydown)
 
         self.bind(size=self.update_size, pos=self.update_size)
 
@@ -259,6 +259,8 @@ class EditorBox(BoxLayout):
                         Line(points=(
                             int(self.note_page.current_pos_1()) - self.note_page.k_size_note * 2, y,
                             int(self.note_page.current_pos_1()) + self.note_page.k_size_note * 2, y), width=1.5)
+
+                self.note_page.list_of_notes_treble_coords.append((self.note_page.current_pos_1(), y))
                 self.note_page.list_of_notes_treble.append(
                     (16 - ind, self.note_page.x_pos_1,
                      self.note_page.current_duration, 0,))
@@ -292,6 +294,7 @@ class EditorBox(BoxLayout):
                             int(self.note_page.current_pos_2()) + self.note_page.k_size_note * 2,
                             y + self.note_page.height // 100 * 2.5 - self.note_page.height / 12), width=1.5)
 
+                self.note_page.list_of_notes_bass_coords.append((self.note_page.current_pos_2(), y))
                 self.note_page.list_of_notes_bass.append(
                     (11 - ind, self.note_page.x_pos_2,
                      self.note_page.current_duration, 0))
@@ -362,9 +365,9 @@ class EditorBox(BoxLayout):
         if self.note_page.current_clef == 1:
             pos_x = self.note_page.current_pos_1()
             pos_y = self.note_page.height / 10 * 9 - (
-                        (self.note_page.x_pos_1 - int(self.note_page.time_signature.split('/')[1]) / int(
-                            self.note_page.current_duration.split('/')[1])) // (
-                                int(self.note_page.time_signature.split('/')[0]) * self.note_page.scale)) * (
+                    (self.note_page.x_pos_1 - int(self.note_page.time_signature.split('/')[1]) / int(
+                        self.note_page.current_duration.split('/')[1])) // (
+                            int(self.note_page.time_signature.split('/')[0]) * self.note_page.scale)) * (
                             self.note_page.height / 12 + self.note_page.height // 100 * 8) - self.note_page.height // 25
             self.note_page.database.update_sign(f'notepage_treble_{self.note_page.id_database}', value,
                                                 self.note_page.x_pos_1 - int(
@@ -403,6 +406,61 @@ class EditorBox(BoxLayout):
         self.note_page.time_signature = value
         self.note_page.update_size(1, 1)
 
+    # Обработчик нажатий на клавиатуру
+    def on_keydown(self, instance, keyboard, keycode, text, modifiers):
+        if 'ctrl' in modifiers:
+            # Уменьшение масштаба
+            if keycode == 45:
+                self.note_page.scale += 1
+                self.note_page.each_note = self.note_page.width * 8 / 9 / self.note_page.scale / int(
+                    self.note_page.time_signature.split('/')[0])
+                self.note_page.update_size(instance, 1)
+            # Увеличение масштаба
+            elif keycode == 46 and self.note_page.scale > 1:
+                self.note_page.scale -= 1
+                self.note_page.each_note = self.note_page.width * 8 / 9 / self.note_page.scale / int(
+                    self.note_page.time_signature.split('/')[0])
+                self.note_page.update_size(instance, 1)
+            # Копирование куска произведения
+            elif text == 'c':
+                try:
+                    x, y = self.note_page.rect_highlight.pos
+                    w, h = self.note_page.rect_highlight.size
+                    self.note_page.clipboard = [x, y, x + w, y + h]
+                except:
+                    pass
+            # Вставка
+            elif text == 'v':
+                x, y, x1, y1 = self.note_page.clipboard
+                if x > x1:
+                    x1, x = x, x1
+                if y > y1:
+                    y1, y = y, y1
+                for i in range(len(self.note_page.list_of_notes_treble_coords)):
+                    if x <= self.note_page.list_of_notes_treble_coords[i][0] <= x1 and y <= self.note_page.list_of_notes_treble_coords[i][1] <= y1:
+                        elem = self.note_page.list_of_notes_treble[i]
+                        self.note_page.list_of_notes_treble.append(
+                            (elem[0], self.note_page.x_pos_1, elem[2], elem[3]))
+                        self.note_page.database.update(f'notepage_treble_{self.note_page.id_database}',
+                                             (
+                                                 elem[0], self.note_page.x_pos_1,
+                                                 elem[2], elem[3]))
+                        self.note_page.x_pos_1 += int(self.note_page.time_signature.split('/')[1]) / int(
+                            elem[2].split('/')[1])
+                for i in range(len(self.note_page.list_of_notes_bass_coords)):
+                    if x <= self.note_page.list_of_notes_bass_coords[i][0] <= x1 and y <= self.note_page.list_of_notes_bass_coords[i][1] <= y1:
+                        elem = self.note_page.list_of_notes_bass[i]
+                        self.note_page.list_of_notes_bass.append(
+                            (elem[0], self.note_page.x_pos_2, elem[2], elem[3]))
+                        self.note_page.database.update(f'notepage_bass_{self.note_page.id_database}',
+                                             (
+                                                 elem[0], self.note_page.x_pos_2,
+                                                 elem[2], elem[3]))
+                        self.note_page.x_pos_2 += int(self.note_page.time_signature.split('/')[1]) / int(
+                            elem[2].split('/')[1])
+                self.note_page.update_size(instance, 1)
+
+
 
 class NotePage(Widget):
     def __init__(self, **kwargs):
@@ -414,13 +472,15 @@ class NotePage(Widget):
         self.title = self.database.select_title()
         self.author = self.database.select_author(k=1)
 
+        self.list_of_notes_treble_coords = []  # Координаты нот скрипичного ключа
+        self.list_of_notes_bass_coords = []  # Координаты нот басового ключа
         self.list_of_notes_treble = self.connecting_db(
             f'notepage_treble_{self.id_database}')  # Все ноты скрипичного ключа
         self.list_of_notes_bass = self.connecting_db(f'notepage_bass_{self.id_database}')  # Все ноты басового ключа
+
         self.time_signature = '4/4'  # Размер произведения
         self.tonality = 'C-dur'  # Тональность
         self.current_duration = '1/4'  # По умолчанию длительность
-        self.each_note = self.width * 8 / 9 / 4 / int(self.time_signature.split('/')[0])  # На каждую мин долю
         self.x_pos_1 = 0  # Текущая позиция Скр. ключ
         self.x_pos_2 = 0  # Текущая позиция Бас.ключ
         self.y_pos = [self.height // 200 * i for i in range(-6, 19)]  # Позиция по вертикали (все возможные)
@@ -428,7 +488,9 @@ class NotePage(Widget):
         self.k_size_note = self.height // 150  # Коэфф размера ноты
 
         self.scale = 4  # Количество тактов на строке
+        self.each_note = self.width * 8 / 9 / self.scale / int(self.time_signature.split('/')[0])  # На каждую мин долю
         self.selected_note = -1
+        self.clipboard = [0, 0, 0, 0]  # Буфер обмена
 
         self.bind(size=self.update_size, pos=self.update_size)
 
@@ -577,6 +639,7 @@ class NotePage(Widget):
                                 int(self.current_pos_1()) + self.k_size_note * 2, interval - self.y_pos[index + 3]),
                                 width=1.5)
 
+                    self.list_of_notes_treble_coords.append((self.current_pos_1(), y))
                     self.list_of_notes_treble.append(
                         (index, self.x_pos_1, self.current_duration, 0))
                     self.database.update(f'notepage_treble_{self.id_database}',
@@ -674,6 +737,7 @@ class NotePage(Widget):
                                 interval - self.height // 12 - self.y_pos[index - 3]),
                                 width=1.5)
 
+                    self.list_of_notes_bass_coords.append((self.current_pos_2(), y))
                     self.list_of_notes_bass.append(
                         (index, self.x_pos_2, self.current_duration, 0))
                     self.database.update(f'notepage_bass_{self.id_database}', (
@@ -683,7 +747,19 @@ class NotePage(Widget):
                     self.x_pos_2 += int(self.time_signature.split('/')[1]) / int(
                         self.current_duration.split('/')[1])
                     self.current_clef = 2
+            elif touch.button == 'right':
+                Color(0, 0, 0, 0.5)
+                self.rect_highlight = Rectangle(pos=touch.pos, size=(1, 1))
             self.make_beat()
+
+    def on_touch_move(self, touch):
+        if touch.button == 'right':
+            x, y = self.rect_highlight.pos
+            self.rect_highlight.size = (touch.pos[0] - x, touch.pos[1] - y)
+
+    def on_touch_up(self, touch):
+        if touch.button == 'right':
+            self.canvas.remove(self.rect_highlight)
 
     # Такты
     def make_beat(self):
@@ -697,16 +773,16 @@ class NotePage(Widget):
             for i in range(count_beats):
                 with self.canvas:
                     Color(0, 0, 0, 1)
-                    Line(points=(self.width / 9 * 8 / 4 * (i + 1) + self.width / 9 - self.each_note / 3,
+                    Line(points=(self.width / 9 * 8 / self.scale * (i + 1) + self.width / 9 - self.each_note / 3,
                                  self.height / 10 * 9 - num_string * (self.height / 6),
-                                 self.width / 9 * 8 / 4 * (i + 1) + self.width / 9 - self.each_note / 3,
+                                 self.width / 9 * 8 / self.scale * (i + 1) + self.width / 9 - self.each_note / 3,
                                  self.height / 10 * 9 - num_string * (
                                          self.height / 6) - self.height / 100 * 4), width=1.5)
-                    Line(points=(self.width / 9 * 8 / 4 * (i + 1) + self.width / 9 - self.each_note / 3,
+                    Line(points=(self.width / 9 * 8 / self.scale * (i + 1) + self.width / 9 - self.each_note / 3,
                                  self.height / 10 * 9 - num_string * (
                                          self.height / 6) - (
                                          self.height / 12),
-                                 self.width / 9 * 8 / 4 * (i + 1) + self.width / 9 - self.each_note / 3,
+                                 self.width / 9 * 8 / self.scale * (i + 1) + self.width / 9 - self.each_note / 3,
                                  self.height / 10 * 9 - num_string * (
                                          self.height / 6) - (
                                          self.height / 12 + self.height / 100 * 4)), width=1.5)
@@ -725,6 +801,7 @@ class NotePage(Widget):
                         self.scale * int(self.time_signature.split('/')[0])) * self.each_note) - self.each_note / 2,
                              y)
                 self.add_widget(pause)
+                self.list_of_notes_treble_coords.append((self.current_pos_1(), y))
 
 
         else:
@@ -735,6 +812,7 @@ class NotePage(Widget):
                         self.time_signature.split('/')[0])) * self.each_note) - self.each_note / 2,
                     y - self.height / 12)
                 self.add_widget(pause)
+                self.list_of_notes_bass_coords.append((self.current_pos_2(), y))
 
         self.make_beat()
 
@@ -759,6 +837,7 @@ class NotePage(Widget):
         return list(self.database.select(name_db))
 
     def filling_canvas(self):
+        self.list_of_notes_treble_coords, self.list_of_notes_bass_coords = [], []
         self.x_pos_1, self.x_pos_2 = 0, 0
         for i in self.list_of_notes_treble:
             if i[3] == 3:
@@ -832,6 +911,8 @@ class NotePage(Widget):
 
                 self.adding_signature(sign, self.current_pos_1(), y)
 
+                self.list_of_notes_treble_coords.append((int(pos), y))
+
                 self.x_pos_1 += int(self.time_signature.split('/')[1]) / int(
                     self.current_duration.split('/')[1])
         else:
@@ -858,6 +939,8 @@ class NotePage(Widget):
                         y - self.height / 12,
                         pos + self.k_size_note * 2,
                         y - self.height / 12), width=1.5)
+
+                self.list_of_notes_bass_coords.append((int(pos), y))
 
                 self.adding_signature(sign, self.current_pos_2(), y - self.height / 12)
 

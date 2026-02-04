@@ -1,4 +1,5 @@
 import sqlite3
+import threading
 import time
 from datetime import datetime
 
@@ -10,6 +11,8 @@ from kivy.animation import Animation
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
+from kivy.uix.label import Label
+from kivy.uix.popup import Popup
 from kivy.uix.screenmanager import Screen
 from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
@@ -23,11 +26,14 @@ class RecognizeBox(BoxLayout):
         super().__init__()
         self.orientation = 'vertical'
         self.button_recognition = Button(
-            text="Начать",
+            text="Начать запись",
             pos_hint={"center_x": 0.5, "center_y": 0.5},
         )
 
-        self.button_recognition.bind(on_press=self.recognition)
+        self.thread = None
+        self.stop_event = threading.Event()
+
+        self.button_recognition.bind(on_press=self.button_recognition_method)
 
         self.add_widget(self.button_recognition)
 
@@ -62,10 +68,20 @@ class RecognizeBox(BoxLayout):
 
         p.terminate()
 
+    def button_recognition_method(self, instance):
+        if self.thread is None or not self.thread.is_alive():
+            self.stop_event.clear()
+            self.thread = threading.Thread(target=self.recognition)
+            self.thread.start()
+            instance.text = 'Идет запись'
+        else:
+            # Остановка текущего потока
+            self.stop_event.set()
+            instance.text = 'Начать'
+            self.show_notification('Запись завершена. Результат сохранен')
+
     # Распознание нот
-    def recognition(self, instance):
-        anim = Animation(size_hint=(1.2, 1.2)) + Animation(size_hint=(1, 1))
-        anim.start(self.button_recognition)
+    def recognition(self):
         # Лист для записи расшифрованного
         self.note_database = DataBase()
         self.con = sqlite3.connect("db.db")
@@ -87,7 +103,6 @@ class RecognizeBox(BoxLayout):
         channels = 1
         # 44100 сэмплов в секунду
         sample_rate = 44100
-        record_seconds = 20
         # initialize PyAudio object
         p = pyaudio.PyAudio()
         # открыть объект потока как ввод и вывод
@@ -98,8 +113,7 @@ class RecognizeBox(BoxLayout):
                         output=True,
                         frames_per_buffer=chunk)
         frames = []
-        self.button_recognition.text = 'Идет запись'
-        for i in range(int(44100 / chunk * record_seconds)):
+        while True:
             data = stream.read(chunk)
             # преобразование байтовых данных в массив numpy
             data = np.frombuffer(data, dtype=np.int16)
@@ -194,29 +208,28 @@ class RecognizeBox(BoxLayout):
             # если вы хотите слышать свой голос во время записи
             # stream.write(data)
             frames.append(data)
-        self.button_recognition.text = 'Запись окончена'
-        # остановить и закрыть поток
-        stream.stop_stream()
-        stream.close()
-        # завершить работу объекта pyaudio
-        p.terminate()
-        # сохранить аудиофайл
-        # открываем файл в режиме 'запись байтов'
-        wf = wave.open(filename, "wb")
-        # установить каналы
-        wf.setnchannels(channels)
-        # установить формат образца
-        wf.setsampwidth(p.get_sample_size(FORMAT))
-        # установить частоту дискретизации
-        wf.setframerate(sample_rate)
-        # записываем кадры как байты
-        wf.writeframes(b"".join(frames))
-        # закрыть файл
-        self.con.close()
-        wf.close()
-        time.sleep(5)
-        self.button_recognition.text = 'Начать запись'
-        ret = 0
+            if self.stop_event.is_set():
+                # остановить и закрыть поток
+                stream.stop_stream()
+                stream.close()
+                # завершить работу объекта pyaudio
+                p.terminate()
+                # сохранить аудиофайл
+                # открываем файл в режиме 'запись байтов'
+                wf = wave.open(filename, "wb")
+                # установить каналы
+                wf.setnchannels(channels)
+                # установить формат образца
+                wf.setsampwidth(p.get_sample_size(FORMAT))
+                # установить частоту дискретизации
+                wf.setframerate(sample_rate)
+                # записываем кадры как байты
+                wf.writeframes(b"".join(frames))
+                # закрыть файл
+                self.con.close()
+                wf.close()
+                break
+
 
     def adding_note_page_recognize(self):
         name_id = len([i[0] for i in list(self.cur.execute('SELECT ID FROM saved_database WHERE name LIKE "Распознанный лист%"').fetchall())]) + 1
@@ -263,6 +276,10 @@ class RecognizeBox(BoxLayout):
                     a.append(abs(freq))
 
             print(f'{note} - {list(sorted(a))[len(a) // 2]}')
+
+    def show_notification(self, text):
+        popup = Popup(title='Уведомление', content=Label(text=text), size_hint=(None, None), size=(400, 400))
+        popup.open()
 
 
 

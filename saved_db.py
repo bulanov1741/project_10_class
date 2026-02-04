@@ -54,7 +54,7 @@ class SavedDatabaseLayout(FloatLayout):
         self.saved_db_box.adding_note_page()
 
     def on_spinner_select(self, instance, value):
-        self.saved_db_box.sorting_num = ["По порядку", "По названию", "По дате изменения"].index(value)
+        self.saved_db_box.sorting_num = ["По порядку", "По названию", "По автору"].index(value)
         self.saved_db_box.sorting()
 
 
@@ -160,6 +160,7 @@ class SavedDatabaseView(ScrollView):
 
     def sorting(self):
         self.layout.clear_widgets()
+        self.saved_db_list = list(self.cur.execute(f"SELECT * FROM saved_database").fetchall())
         for i in sorted(self.saved_db_list, key=lambda x: x[self.sorting_num]):
             name_database = TextInput(
                 text=i[1],

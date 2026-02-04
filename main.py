@@ -1,5 +1,6 @@
 from kivy import Config
 from kivy.app import App
+from kivy.lang import Builder
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.screenmanager import ScreenManager
@@ -8,7 +9,7 @@ from profile import ProfileScreen
 from recognize import RecognizeBox, RecognizeScreen
 from saved_db import SavedDatabaseScreen
 from editor import EditorScreen
-from theory import TheoryScreen
+from about import AboutScreen
 
 
 class MainBox(BoxLayout):
@@ -18,8 +19,8 @@ class MainBox(BoxLayout):
         Config.set('input', 'mouse', 'mouse, disable_multitouch')
         # Экраны
         self.screen_manager = ScreenManager()
-        self.theory_screen = TheoryScreen()
-        self.theory_screen.name = 'theory'
+        self.about_screen = AboutScreen()
+        self.about_screen.name = 'about'
         self.saved_db_screen = SavedDatabaseScreen()
         self.saved_db_screen.name = 'saved_db'
         self.editor_screen = EditorScreen()
@@ -29,7 +30,7 @@ class MainBox(BoxLayout):
         self.profile_screen = ProfileScreen()
         self.profile_screen.name = 'profile'
 
-        self.screen_manager.add_widget(self.theory_screen)
+        self.screen_manager.add_widget(self.about_screen)
         self.screen_manager.add_widget(self.editor_screen)
         self.screen_manager.add_widget(self.recognize_screen)
         self.screen_manager.add_widget(self.saved_db_screen)
@@ -38,13 +39,13 @@ class MainBox(BoxLayout):
         self.add_widget(self.screen_manager)
         # Навигационная панель
         self.navigation_bar = BoxLayout()
-        self.theory = Button(text="Теория")
+        self.about = Button(text="Теория")
         self.editor = Button(text="Редактор")
         self.recognize = Button(text="Распознование")
         self.saved_db = Button(text="Сохраненные")
         self.profile = Button(text="Профиль")
 
-        self.theory.bind(on_press=self.changing_screens_on_theory)
+        self.about.bind(on_press=self.changing_screens_on_about)
         self.editor.bind(on_press=self.changing_screens_on_editor)
         self.recognize.bind(on_press=self.changing_screens_on_recognize)
         self.saved_db.bind(on_press=self.changing_screens_on_saved_db)
@@ -52,7 +53,7 @@ class MainBox(BoxLayout):
 
 
 
-        for i in [self.theory, self.editor, self.recognize, self.saved_db, self.profile]:
+        for i in [self.about, self.editor, self.recognize, self.saved_db, self.profile]:
             self.navigation_bar.add_widget(i)
         self.navigation_bar.size = (self.width, self.width / 5)
         self.add_widget(self.navigation_bar)
@@ -69,8 +70,8 @@ class MainBox(BoxLayout):
         self.add_widget(self.navigation_bar)
 
 
-    def changing_screens_on_theory(self, instance):
-        self.screen_manager.switch_to(self.theory_screen)
+    def changing_screens_on_about(self, instance):
+        self.screen_manager.switch_to(self.about_screen)
 
     def changing_screens_on_editor(self, instance):
         self.editor_screen = EditorScreen()
@@ -89,6 +90,7 @@ class MainBox(BoxLayout):
 
 class MainApp(App):
     def build(self):
+        # Builder.load_file("about.kv")
         return MainBox()
 
 
