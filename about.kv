@@ -1,0 +1,72 @@
+#:import utils kivy.utils
+
+<AboutScreen>:
+    canvas.before:
+        Color:
+            rgba: 1, 1, 1, 1
+        Rectangle:
+            pos: self.pos
+            size: self.size
+            source: 'templates/background.jpg'
+
+    FloatLayout:
+        # Заголовок
+        Label:
+            text: 'Note Editor'
+            font_size: '32sp'
+            bold: True
+            color: utils.get_color_from_hex('#FFFFFF')
+            size_hint: 1, None
+            height: 70
+            pos_hint: {'top': 0.8}
+            text_size: self.width, None
+            halign: 'center'
+            valign: 'middle'
+
+        # Слоган
+        Label:
+            text: 'Живите музыкой вместе с нами'
+            font_size: '18sp'
+            italic: True
+            color: utils.get_color_from_hex('#E0E0E0')
+            size_hint: 1, None
+            height: 30
+            pos_hint: {'top': 0.7}
+            text_size: self.width, None
+            halign: 'center'
+            valign: 'middle'
+
+        # Инструкция
+        Button:
+            size_hint: (None, None)
+            size: (150, 150)
+            pos_hint: {'center_x': 0.5, 'center_y': 0.4}
+            background_normal: 'templates/quarter.png'
+            on_press: root.instruction_pressed()
+            background_color: (1, 1, 1, 0)
+            canvas.before:
+                Color:
+                    rgba: (1, 1, 1, 0.3) if self.state == 'normal' else (1, 1, 1, 0.5)
+                RoundedRectangle:
+                    size: (self.size[0] + 20, self.size[1] + 20)
+                    pos: (self.pos[0] - 10, self.pos[1] - 10)
+                    radius: [25]
+
+        # Email
+        Button:
+            text: 'По вопросам и предложениям: notebasic@yandex.ru'
+            font_size: '18sp'
+            size_hint: (0.6, None)
+            height: 50
+            pos_hint: {'center_x': 0.5, 'y': 0.1}
+            background_color: (0, 0, 0, 0.2)
+            color: utils.get_color_from_hex('#FFFFFF')
+            bold: True
+            on_press: root.email_clicked()
+            canvas.before:
+                Color:
+                    rgba: 0, 0, 0, 0.3
+                RoundedRectangle:
+                    pos: self.pos
+                    size: self.size
+                    radius: [25]

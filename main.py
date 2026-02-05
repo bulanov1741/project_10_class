@@ -39,7 +39,7 @@ class MainBox(BoxLayout):
         self.add_widget(self.screen_manager)
         # Навигационная панель
         self.navigation_bar = BoxLayout()
-        self.about = Button(text="Теория")
+        self.about = Button(text="О приложении")
         self.editor = Button(text="Редактор")
         self.recognize = Button(text="Распознование")
         self.saved_db = Button(text="Сохраненные")
@@ -90,7 +90,7 @@ class MainBox(BoxLayout):
 
 class MainApp(App):
     def build(self):
-        # Builder.load_file("about.kv")
+        Builder.load_file("about.kv")
         return MainBox()
 
 
