@@ -62,7 +62,6 @@ class SavedDatabaseView(ScrollView):
     def __init__(self):
         super().__init__()
         self.layout = GridLayout(cols=6, size_hint_y=None)
-        # Устанавливаем высоту GridLayout динамически
         self.layout.bind(minimum_height=self.layout.setter('height'))
 
         self.con = sqlite3.connect("db.db")
@@ -128,6 +127,8 @@ class SavedDatabaseView(ScrollView):
     def deleting_sheet_music(self, instance, id_database):
         if self.cur.execute(f"SELECT now_open FROM saved_database WHERE id = ?",  (id_database,)).fetchone()[0] == 0:
             self.cur.execute(f"DELETE FROM saved_database WHERE id = ?", (id_database,))
+            self.cur.execute(f"DROP TABLE IF EXISTS notepage_treble_{id_database}")
+            self.cur.execute(f"DROP TABLE IF EXISTS notepage_bass_{id_database}")
             self.con.commit()
             self.saved_db_list = list(self.cur.execute(f"SELECT * FROM saved_database").fetchall())
             self.layout.height = self.height / 10 * len(self.saved_db_list)
@@ -182,8 +183,8 @@ class SavedDatabaseView(ScrollView):
             self.layout.add_widget(delete)
             self.layout.add_widget(choose)
 
-            name_database.bind(on_text_validate=partial(self.saving_new_title, id_database=i[0], name=name_database.text))
-            save.bind(on_press=partial(self.saving_new_title, id_database=i[0], name=name_database.text))
+            name_database.bind(on_text_validate=partial(self.saving_new_title, id_database=i[0], name=name_database))
+            save.bind(on_press=partial(self.saving_new_title, id_database=i[0], name=name_database))
             delete.bind(on_press=partial(self.deleting_sheet_music, id_database=i[0]))
             choose.bind(on_press=partial(self.changing_sheet_music, id_database=i[0]))
 

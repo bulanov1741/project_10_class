@@ -26,7 +26,8 @@ class RecognizeBox(BoxLayout):
         super().__init__()
         self.orientation = 'vertical'
         self.button_recognition = Button(
-            text="Начать запись",
+            #text="Начать запись",
+            background_normal='templates/play_black.png',
             pos_hint={"center_x": 0.5, "center_y": 0.5},
         )
 
@@ -73,11 +74,13 @@ class RecognizeBox(BoxLayout):
             self.stop_event.clear()
             self.thread = threading.Thread(target=self.recognition)
             self.thread.start()
-            instance.text = 'Идет запись'
+            #instance.text = 'Идет запись'
+            instance.background_normal = 'templates/stop_black.png'
         else:
             # Остановка текущего потока
             self.stop_event.set()
-            instance.text = 'Начать'
+            #instance.text = 'Начать запись'
+            instance.background_normal = 'templates/play_black.png'
             self.show_notification('Запись завершена. Результат сохранен')
 
     # Распознание нот
@@ -97,7 +100,7 @@ class RecognizeBox(BoxLayout):
         # имя файла для записи
         filename = "recorded.wav"
         # установить размер блока в 1024 сэмпла
-        chunk = 1024
+        chunk = 10000
         # образец формата
         FORMAT = pyaudio.paInt16
         channels = 1
@@ -113,6 +116,8 @@ class RecognizeBox(BoxLayout):
                         output=True,
                         frames_per_buffer=chunk)
         frames = []
+        start = time.time()
+        note = ''
         while True:
             data = stream.read(chunk)
             # преобразование байтовых данных в массив numpy
@@ -204,6 +209,8 @@ class RecognizeBox(BoxLayout):
                                               [10, self.pos_x,
                                                '1/4', 0])
                     self.pos_x += 1
+                print(time.time() - start)
+                start = time.time()
 
             # если вы хотите слышать свой голос во время записи
             # stream.write(data)

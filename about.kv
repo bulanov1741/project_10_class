@@ -41,9 +41,7 @@
             size_hint: (None, None)
             size: (150, 150)
             pos_hint: {'center_x': 0.5, 'center_y': 0.4}
-            background_normal: 'templates/quarter.png'
             on_press: root.instruction_pressed()
-            background_color: (1, 1, 1, 0)
             canvas.before:
                 Color:
                     rgba: (1, 1, 1, 0.3) if self.state == 'normal' else (1, 1, 1, 0.5)
@@ -51,6 +49,7 @@
                     size: (self.size[0] + 20, self.size[1] + 20)
                     pos: (self.pos[0] - 10, self.pos[1] - 10)
                     radius: [25]
+            background_normal: 'templates/instruction.png'
 
         # Email
         Button:

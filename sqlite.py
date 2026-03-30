@@ -5,10 +5,10 @@ class DataBase():
     def __init__(self):
         super().__init__()
 
-        self.con = sqlite3.connect("db.db")  # Подключаем базу данных
+        self.con = sqlite3.connect("db.db")
         self.cur = self.con.cursor()
 
-        self.con.commit()  # Применяем изменения
+        self.con.commit()
 
     def create(self, name):
         self.cur.execute(f'''

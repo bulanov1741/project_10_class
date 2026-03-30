@@ -1,6 +1,10 @@
+import os
+import sys
+
 from kivy import Config
 from kivy.app import App
 from kivy.lang import Builder
+from kivy.resources import resource_add_path
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.uix.screenmanager import ScreenManager
@@ -41,9 +45,15 @@ class MainBox(BoxLayout):
         self.navigation_bar = BoxLayout()
         self.about = Button(text="О приложении")
         self.editor = Button(text="Редактор")
-        self.recognize = Button(text="Распознование")
+        self.recognize = Button(text="Распознавание")
         self.saved_db = Button(text="Сохраненные")
         self.profile = Button(text="Профиль")
+
+        self.about.background_color = (0.5, 0.5, 0.5, 1)
+        self.editor.background_color = (0.5, 0.5, 0.5, 1)
+        self.recognize.background_color = (0.5, 0.5, 0.5, 1)
+        self.saved_db.background_color = (0.5, 0.5, 0.5, 1)
+        self.profile.background_color = (0.5, 0.5, 0.5, 1)
 
         self.about.bind(on_press=self.changing_screens_on_about)
         self.editor.bind(on_press=self.changing_screens_on_editor)
@@ -87,9 +97,18 @@ class MainBox(BoxLayout):
     def changing_screens_on_profile(self, instance):
         self.screen_manager.switch_to(self.profile_screen)
 
+    def on_keydown(self, instance, keyboard, keycode, text, modifiers):
+        if 'ctrl' in modifiers:
+            if text == 'w':
+                self.theme = 'white'
+            elif text == 'b':
+                self.theme = 'black'
+
 
 class MainApp(App):
     def build(self):
+        if hasattr(sys, '_MEIPASS'):
+            resource_add_path(os.path.join(sys._MEIPASS))
         Builder.load_file("about.kv")
         return MainBox()
 
